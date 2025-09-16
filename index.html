@@ -108,10 +108,10 @@
                                 <button class="btn btn-primary" onclick="switchTab('upload')">
                                     <i class="fas fa-upload"></i> New Scan
                                 </button>
-                                <button class="btn btn-secondary" onclick="generateReport()">
+                                <button class="btn btn-secondary" id="exportPdfBtn" onclick="generateReport()">
                                     <i class="fas fa-file-pdf"></i> Export Report
                                 </button>
-                                <button class="btn btn-warning" onclick="clearAllData()">
+                                <button class="btn btn-warning" id="clearDataBtn" onclick="clearAllData()">
                                     <i class="fas fa-trash"></i> Clear Data
                                 </button>
                             </div>
@@ -160,7 +160,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <button class="btn btn-primary" onclick="generateSpectrum()">
+                                    <button class="btn btn-primary" id="generateBtn" onclick="generateSpectrum()">
                                         <i class="fas fa-cogs"></i> Generate Spectrum
                                     </button>
                                 </div>
@@ -331,6 +331,7 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="api.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
