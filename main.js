@@ -2,28 +2,72 @@
 // This replaces the existing script.js with full API integration
 
 // Global variables
-let spectrumChart = null;
+let authToken = null;
+let currentUser = null;
 let currentSpectrumData = null;
+let spectrumChart = null;
+let isLiveModeActive = false;
+let liveModeInterval = null;
 let systemStartTime = Date.now();
 let totalScans = 0;
 let threatsDetected = 0;
-let isLiveModeActive = false;
-let liveModeInterval = null;
 let analysisInProgress = false;
 let currentAnalysisSession = null;
 
+// Authentication Guard - Check if user is logged in
+function checkAuthentication() {
+    // Check localStorage first (remember me), then sessionStorage
+    authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    const userInfo = localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo');
+    
+    if (!authToken) {
+        // No token found, redirect to login
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    if (userInfo) {
+        try {
+            currentUser = JSON.parse(userInfo);
+        } catch (e) {
+            console.error('Error parsing user info:', e);
+        }
+    }
+    
+    return true;
+}
+
+// Logout function
+function logout() {
+    // Clear all stored authentication data
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userInfo');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('userInfo');
+    
+    // Reset global variables
+    authToken = null;
+    currentUser = null;
+    
+    // Redirect to login page
+    window.location.href = 'login.html';
+}
+
 // API Configuration
 const API_BASE_URL = 'http://localhost:5000/api';
-let authToken = localStorage.getItem('authToken');
-let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication first - redirect to login if not authenticated
+    if (!checkAuthentication()) {
+        return; // Exit early if not authenticated
+    }
+    
     initializeApp();
     setupEventListeners();
     updateSystemStats();
     
-    // Check authentication status
+    // Update UI for authenticated user
     if (authToken && currentUser) {
         updateUIForAuthenticatedUser();
         loadDashboardData();

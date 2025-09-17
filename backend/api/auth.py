@@ -13,16 +13,30 @@ def register():
     """Register a new user."""
     try:
         data = request.get_json()
+        print(f"📝 Registration request data: {data}")  # Debug logging
+        
+        # Check if request has JSON data
+        if not data:
+            print("❌ No JSON data provided")
+            return jsonify({'message': 'No JSON data provided'}), 400
+        
+        # Handle email as username - require either username+email or just email
+        email = data.get('email', '').strip().lower()
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        
+        # If no username provided, use email as username
+        if not username and email:
+            username = email.split('@')[0]  # Use part before @ as username
         
         # Validate required fields
-        required_fields = ['username', 'email', 'password']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'message': f'{field} is required'}), 400
-        
-        username = data['username'].strip()
-        email = data['email'].strip().lower()
-        password = data['password']
+        if not email:
+            return jsonify({'message': 'Email is required'}), 400
+        if not password:
+            return jsonify({'message': 'Password is required'}), 400
+        if not username:
+            return jsonify({'message': 'Username is required'}), 400
+            
         role = data.get('role', 'operator')
         
         # Validate input
@@ -36,33 +50,68 @@ def register():
         if not is_valid:
             return jsonify({'message': message}), 400
         
-        # Check if user already exists
-        if User.find_by_email(email):
-            return jsonify({'message': 'Email already registered'}), 409
+        # Check if user already exists (with file storage fallback)
+        try:
+            existing_user = User.find_by_email(email)
+            if existing_user:
+                return jsonify({'message': 'Email already registered'}), 409
+        except Exception as db_error:
+            # MongoDB not available - use file storage
+            print(f"⚠️  MongoDB not available, using file storage: {db_error}")
+            from utils.file_storage import file_storage
+            existing_user = file_storage.find_user_by_email(email)
+            if existing_user:
+                return jsonify({'message': 'Email already registered'}), 409
         
-        # Create new user
-        result = User.create(
-            username=username,
-            email=email,
-            password_hash=hash_password(password),
-            role=role
-        )
+        # Create new user (with file storage fallback)
+        try:
+            result = User.create(
+                username=username,
+                email=email,
+                password_hash=hash_password(password),
+                role=role
+            )
+            user_id = str(result.inserted_id)
+            
+            # Get the created user
+            user_doc = User.find_by_email(email)
+            user_data = User.to_dict(user_doc)
+            
+        except Exception as db_error:
+            # MongoDB not available - use file storage
+            print(f"⚠️  MongoDB not available, using file storage: {db_error}")
+            from utils.file_storage import file_storage
+            
+            result = file_storage.create_user(
+                username=username,
+                email=email,
+                password_hash=hash_password(password),
+                role=role
+            )
+            user_id = str(result.inserted_id)
+            
+            # Get the created user from file storage
+            user_doc = file_storage.find_user_by_email(email)
+            user_data = file_storage.user_to_dict(user_doc)
         
-        user_id = result.inserted_id
-        
-        log_system_event('INFO', f'New user registered: {username}', 'auth', str(user_id))
-        
-        # Get the created user
-        user_doc = User.find_by_email(email)
+        try:
+            log_system_event('INFO', f'New user registered: {username}', 'auth', user_id)
+        except:
+            print(f"📝 User registered: {username}")
         
         return jsonify({
             'message': 'User registered successfully',
-            'user': User.to_dict(user_doc)
+            'user': user_data
         }), 201
         
     except Exception as e:
-        log_system_event('ERROR', f'Registration error: {str(e)}', 'auth')
-        return jsonify({'message': 'Registration failed'}), 500
+        error_msg = f'Registration error: {str(e)}'
+        print(f"❌ {error_msg}")  # Console logging for debugging
+        try:
+            log_system_event('ERROR', error_msg, 'auth')
+        except:
+            pass
+        return jsonify({'message': f'Registration failed: {str(e)}'}), 500
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -70,34 +119,86 @@ def login():
     try:
         data = request.get_json()
         
-        if 'username' not in data or 'password' not in data:
-            return jsonify({'message': 'Username and password are required'}), 400
+        # Accept both 'username' and 'email' fields (treat email as username)
+        username = data.get('username') or data.get('email')
+        password = data.get('password')
         
-        username = data['username'].strip()
-        password = data['password']
+        if not username or not password:
+            return jsonify({'message': 'Email/username and password are required'}), 400
+        
+        username = username.strip()
+        password = password
         
         # Find user by email (treating username as email for simplicity)
-        user_doc = User.find_by_email(username)
+        try:
+            user_doc = User.find_by_email(username)
+        except Exception as db_error:
+            # MongoDB not available - use file storage
+            print(f"⚠️  MongoDB not available, using file storage: {db_error}")
+            from utils.file_storage import file_storage
+            
+            user_doc = file_storage.find_user_by_email(username)
+            
+            # If no user found and it's the default admin, create it
+            if not user_doc and username == 'admin@example.com' and password == 'admin123':
+                result = file_storage.create_user(
+                    username='admin',
+                    email='admin@example.com',
+                    password_hash=hash_password('admin123'),
+                    role='admin'
+                )
+                user_doc = file_storage.find_user_by_email(username)
         
         if not user_doc or not check_password(user_doc['password_hash'], password):
-            log_system_event('WARNING', f'Failed login attempt for: {username}', 'auth')
+            try:
+                log_system_event('WARNING', f'Failed login attempt for: {username}', 'auth')
+            except:
+                print(f"⚠️  Failed login attempt for: {username}")
             return jsonify({'message': 'Invalid credentials'}), 401
         
         if not user_doc.get('is_active', True):
             return jsonify({'message': 'Account is deactivated'}), 401
         
-        # Update last login
-        User.update_last_login(user_doc['_id'])
+        # Update last login (with fallback)
+        try:
+            User.update_last_login(user_doc['_id'])
+        except Exception:
+            # Try file storage
+            try:
+                from utils.file_storage import file_storage
+                file_storage.update_last_login(user_doc['_id'])
+            except:
+                print(f"📝 Demo login - skipping last login update")
         
         # Generate token
         token = generate_token(user_doc['_id'])
         
-        log_system_event('INFO', f'User logged in: {username}', 'auth', user_doc['_id'])
+        try:
+            log_system_event('INFO', f'User logged in: {username}', 'auth', user_doc['_id'])
+        except:
+            print(f"📝 User logged in: {username}")
+        
+        # Prepare user data for response
+        try:
+            user_data = User.to_dict(user_doc)
+        except:
+            # Try file storage format
+            try:
+                from utils.file_storage import file_storage
+                user_data = file_storage.user_to_dict(user_doc)
+            except:
+                user_data = {
+                    'id': user_doc['_id'],
+                    'username': user_doc.get('username', 'admin'),
+                    'email': user_doc.get('email', username),
+                    'role': user_doc.get('role', 'admin'),
+                    'is_active': user_doc.get('is_active', True)
+                }
         
         return jsonify({
             'message': 'Login successful',
             'token': token,
-            'user': User.to_dict(user_doc)
+            'user': user_data
         }), 200
         
     except Exception as e:
