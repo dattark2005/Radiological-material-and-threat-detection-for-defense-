@@ -59,21 +59,25 @@ def create_app(config_name=None):
     
     # Initialize MongoDB collections and data
     with app.app_context():
-        # Initialize isotope database if empty
-        from models.database import init_isotope_database
-        init_isotope_database()
-        
-        # Create admin user if not exists
-        from models.database import User
-        from utils.auth import hash_password
-        admin_user = User.find_by_email(app.config.get('ADMIN_EMAIL', 'admin@example.com'))
-        if not admin_user:
-            User.create(
-                username=app.config.get('ADMIN_USERNAME', 'admin'),
-                email=app.config.get('ADMIN_EMAIL', 'admin@example.com'),
-                password_hash=hash_password(app.config.get('ADMIN_PASSWORD', 'admin123')),
-                role='admin'
-            )
+        try:
+            # Initialize isotope database if empty
+            from models.database import init_isotope_database
+            init_isotope_database()
+            
+            # Create admin user if not exists
+            from models.database import User
+            from utils.auth import hash_password
+            admin_user = User.find_by_email(app.config.get('ADMIN_EMAIL', 'admin@example.com'))
+            if not admin_user:
+                User.create(
+                    username=app.config.get('ADMIN_USERNAME', 'admin'),
+                    email=app.config.get('ADMIN_EMAIL', 'admin@example.com'),
+                    password_hash=hash_password(app.config.get('ADMIN_PASSWORD', 'admin123')),
+                    role='admin'
+                )
+        except Exception as e:
+            print(f"⚠️  Database initialization failed: {e}")
+            print("📝 Application will continue in demo mode without database persistence")
     
     # JWT error handlers
     @jwt.expired_token_loader

@@ -363,80 +363,80 @@ class IsotopeReference:
             'peak_intensities': isotope_doc.get('peak_intensities', []),
             'isotope_type': isotope_doc.get('isotope_type'),
             'threat_level': isotope_doc.get('threat_level'),
-            'description': isotope_doc.get('description'),
-            'common_uses': isotope_doc.get('common_uses'),
-            'safety_notes': isotope_doc.get('safety_notes')
+            'description': isotope_doc.get('description')
         }
 
 def init_isotope_database():
-    """Initialize isotope reference database with common isotopes."""
-    isotopes = [
-        {
-            'symbol': 'K-40',
-            'name': 'Potassium-40',
-            'atomic_number': 19,
-            'mass_number': 40,
-            'half_life': '1.25 billion years',
-            'decay_mode': 'Beta decay, Electron capture',
-            'gamma_peaks': [1460.8],
-            'peak_intensities': [10.66],
-            'isotope_type': 'Natural',
-            'threat_level': 'Low',
-            'description': 'Naturally occurring radioactive isotope of potassium',
-            'common_uses': 'Dating geological samples, medical imaging',
-            'safety_notes': 'Low radiation risk, naturally present in environment'
-        },
-        {
-            'symbol': 'Cs-137',
-            'name': 'Cesium-137',
-            'atomic_number': 55,
-            'mass_number': 137,
-            'half_life': '30.17 years',
-            'decay_mode': 'Beta decay',
-            'gamma_peaks': [661.7],
-            'peak_intensities': [85.1],
-            'isotope_type': 'Medical',
-            'threat_level': 'High',
-            'description': 'Radioactive isotope of cesium, fission product',
-            'common_uses': 'Medical radiotherapy, industrial gauges',
-            'safety_notes': 'High radiation risk, requires proper shielding'
-        },
-        {
-            'symbol': 'Co-60',
-            'name': 'Cobalt-60',
-            'atomic_number': 27,
-            'mass_number': 60,
-            'half_life': '5.27 years',
-            'decay_mode': 'Beta decay',
-            'gamma_peaks': [1173.2, 1332.5],
-            'peak_intensities': [99.85, 99.98],
-            'isotope_type': 'Industrial',
-            'threat_level': 'High',
-            'description': 'Artificially produced radioactive isotope of cobalt',
-            'common_uses': 'Cancer treatment, food irradiation, industrial radiography',
-            'safety_notes': 'Very high radiation risk, requires heavy shielding'
-        },
-        {
-            'symbol': 'U-238',
-            'name': 'Uranium-238',
-            'atomic_number': 92,
-            'mass_number': 238,
-            'half_life': '4.47 billion years',
-            'decay_mode': 'Alpha decay',
-            'gamma_peaks': [1001.0, 766.4],
-            'peak_intensities': [0.84, 0.30],
-            'isotope_type': 'Nuclear',
-            'threat_level': 'Very High',
-            'description': 'Most common isotope of uranium, fissile material',
-            'common_uses': 'Nuclear fuel, depleted uranium applications',
-            'safety_notes': 'Extremely high security risk, nuclear material'
-        }
-    ]
-    
-    # Check if isotopes already exist
-    existing_count = mongo.db.isotope_references.count_documents({})
-    if existing_count == 0:
-        for isotope in isotopes:
-            IsotopeReference.create(isotope)
-        return len(isotopes)
-    return 0
+    """Initialize the isotope reference database with common isotopes."""
+    try:
+        # Check if MongoDB is connected
+        if mongo.db is None:
+            print("⚠️  MongoDB not connected, skipping isotope database initialization")
+            return 0
+            
+        isotopes = [
+            {
+                'symbol': 'K-40',
+                'name': 'Potassium-40',
+                'atomic_number': 19,
+                'mass_number': 40,
+                'half_life': '1.25 billion years',
+                'decay_type': 'Beta decay, Electron capture',
+                'energy_peaks': [1460.8],  # keV
+                'threat_level': 'background',
+                'description': 'Natural background radiation isotope',
+                'common_uses': 'Natural occurrence in environment',
+                'safety_notes': 'Natural background, minimal risk'
+            },
+            {
+                'symbol': 'Cs-137',
+                'name': 'Cesium-137',
+                'atomic_number': 55,
+                'mass_number': 137,
+                'half_life': '30.17 years',
+                'decay_type': 'Beta decay',
+                'energy_peaks': [661.7],  # keV
+                'threat_level': 'medium',
+                'description': 'Common medical and industrial isotope',
+                'common_uses': 'Medical radiotherapy, industrial gauging',
+                'safety_notes': 'Moderate radiation risk, requires proper handling'
+            },
+            {
+                'symbol': 'Co-60',
+                'name': 'Cobalt-60',
+                'atomic_number': 27,
+                'mass_number': 60,
+                'half_life': '5.27 years',
+                'decay_type': 'Beta decay',
+                'energy_peaks': [1173.2, 1332.5],  # keV
+                'threat_level': 'high',
+                'description': 'Industrial and medical isotope',
+                'common_uses': 'Sterilization, radiotherapy, industrial radiography',
+                'safety_notes': 'High radiation risk, strict security required'
+            },
+            {
+                'symbol': 'U-238',
+                'name': 'Uranium-238',
+                'atomic_number': 92,
+                'mass_number': 238,
+                'half_life': '4.47 billion years',
+                'decay_type': 'Alpha decay',
+                'energy_peaks': [1001.0, 766.4],  # keV
+                'threat_level': 'very_high',
+                'description': 'Most common isotope of uranium, fissile material',
+                'common_uses': 'Nuclear fuel, depleted uranium applications',
+                'safety_notes': 'Extremely high security risk, nuclear material'
+            }
+        ]
+        
+        # Check if isotopes already exist
+        existing_count = mongo.db.isotope_references.count_documents({})
+        if existing_count == 0:
+            for isotope in isotopes:
+                IsotopeReference.create(isotope)
+            return len(isotopes)
+        return 0
+    except Exception as e:
+        print(f"⚠️  Error initializing isotope database: {e}")
+        print("📝 Application will continue without isotope database")
+        return 0

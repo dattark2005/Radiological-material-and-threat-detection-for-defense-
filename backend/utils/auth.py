@@ -24,19 +24,11 @@ def validate_email(email):
     return re.match(pattern, email) is not None
 
 def validate_password(password):
-    """Validate password strength."""
-    if len(password) < 8:
-        return False, "Password must be at least 8 characters long"
+    """Validate password strength - relaxed for development."""
+    if len(password) < 6:
+        return False, "Password must be at least 6 characters long"
     
-    if not re.search(r'[A-Z]', password):
-        return False, "Password must contain at least one uppercase letter"
-    
-    if not re.search(r'[a-z]', password):
-        return False, "Password must contain at least one lowercase letter"
-    
-    if not re.search(r'\d', password):
-        return False, "Password must contain at least one digit"
-    
+    # Relaxed validation for development - just check length
     return True, "Password is valid"
 
 def require_role(required_roles):

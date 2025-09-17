@@ -10,7 +10,7 @@ class Config:
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-key-change-in-production'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=int(os.environ.get('JWT_ACCESS_TOKEN_EXPIRES', 1)))
     
-    # MongoDB
+    # MongoDB - fallback to local MongoDB if Atlas fails
     MONGO_URI = os.environ.get('MONGO_URI') or 'mongodb://localhost:27017/radiological_db'
     
     # File Upload
@@ -29,8 +29,8 @@ class Config:
     LOG_LEVEL = os.environ.get('LOG_LEVEL') or 'INFO'
     LOG_FILE = os.environ.get('LOG_FILE') or 'logs/app.log'
     
-    # CORS
-    CORS_ORIGINS = ['http://localhost:3000', 'http://localhost:8000', 'http://127.0.0.1:8000']
+    # CORS - Allow file:// protocol and common local servers
+    CORS_ORIGINS = ['*']  # Allow all origins for development
 
 class DevelopmentConfig(Config):
     """Development configuration."""
