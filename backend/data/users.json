@@ -6,7 +6,7 @@
     "password_hash": "$2b$12$sap2MvslSBxJc92OOTX5UucUVspaut0ZZNfXrQFLCToo1iTl/.gem",
     "role": "admin",
     "created_at": "2025-09-17T07:28:50.812365",
-    "last_login": "2025-09-17T07:40:22.439054",
+    "last_login": "2025-09-17T08:09:08.333720",
     "is_active": true
   },
   "9301f521-bbef-4578-973a-a7df7312da59": {
@@ -16,6 +16,16 @@
     "password_hash": "$2b$12$o1iUSSnkaXndW2pQPaV8LOZ6YbB3.tlXYKFAIR9mFe5YL0hjEzQt.",
     "role": "operator",
     "created_at": "2025-09-17T07:29:44.227836",
+    "last_login": null,
+    "is_active": true
+  },
+  "85e07df1-22b2-4136-9401-e64b8e18d33d": {
+    "_id": "85e07df1-22b2-4136-9401-e64b8e18d33d",
+    "username": "drk.iit2023",
+    "email": "drk.iit2023@gmail.com",
+    "password_hash": "$2b$12$Z3Oa.pO4BsM88V8IIt/wf.RQONd7IblerxUfqCFQ1/SVOzchzxhsu",
+    "role": "analyst",
+    "created_at": "2025-09-17T08:18:44.651443",
     "last_login": null,
     "is_active": true
   }

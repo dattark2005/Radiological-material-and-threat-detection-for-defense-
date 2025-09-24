@@ -198,48 +198,59 @@
                 <!-- Analysis Results Tab -->
                 <div class="tab-content" id="analysis">
                     <div class="analysis-section">
-                        <!-- Model Results -->
+                        <!-- Quantum Analysis Results -->
                         <div class="model-results">
-                            <div class="card model-card">
-                                <h3><i class="fas fa-brain"></i> Classical CNN/ML Model</h3>
-                                <div class="model-output" id="classicalResults">
-                                    <div class="result-item">
-                                        <span class="label">Threat Probability:</span>
-                                        <span class="value" id="classicalThreat">--</span>
-                                    </div>
-                                    <div class="result-item">
-                                        <span class="label">Classified Isotope:</span>
-                                        <span class="value" id="classicalIsotope">--</span>
-                                    </div>
-                                    <div class="result-item">
-                                        <span class="label">Material Quantity:</span>
-                                        <span class="value" id="classicalQuantity">--</span>
-                                    </div>
-                                    <div class="result-item">
-                                        <span class="label">Confidence Level:</span>
-                                        <span class="value" id="classicalConfidence">--</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card model-card">
-                                <h3><i class="fas fa-atom"></i> Quantum ML (VQC/QNN)</h3>
-                                <div class="model-output" id="quantumResults">
-                                    <div class="result-item">
-                                        <span class="label">Threat Probability:</span>
-                                        <span class="value" id="quantumThreat">--</span>
-                                    </div>
-                                    <div class="result-item">
-                                        <span class="label">Classified Isotope:</span>
-                                        <span class="value" id="quantumIsotope">--</span>
-                                    </div>
-                                    <div class="result-item">
-                                        <span class="label">Material Quantity:</span>
-                                        <span class="value" id="quantumQuantity">--</span>
-                                    </div>
-                                    <div class="result-item">
-                                        <span class="label">Confidence Level:</span>
-                                        <span class="value" id="quantumConfidence">--</span>
+                            <div class="card quantum-main-card">
+                                <h3><i class="fas fa-atom"></i> Quantum ML Analysis Results</h3>
+                                <div class="quantum-output" id="quantumResults">
+                                    <div class="quantum-grid">
+                                        <div class="quantum-result-section">
+                                            <h4><i class="fas fa-exclamation-triangle"></i> Threat Assessment</h4>
+                                            <div class="result-item">
+                                                <span class="label">Threat Level:</span>
+                                                <span class="value threat-level" id="quantumThreatLevel">--</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="label">Threat Probability:</span>
+                                                <span class="value" id="quantumThreat">--</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="quantum-result-section">
+                                            <h4><i class="fas fa-atom"></i> Material Identification</h4>
+                                            <div class="result-item">
+                                                <span class="label">Classified Isotope:</span>
+                                                <span class="value" id="quantumIsotope">--</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="label">Material Type:</span>
+                                                <span class="value" id="quantumMaterialType">--</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="quantum-result-section">
+                                            <h4><i class="fas fa-chart-line"></i> Quantum Metrics</h4>
+                                            <div class="result-item">
+                                                <span class="label">VQC Confidence:</span>
+                                                <span class="value" id="quantumVQCConfidence">--</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="label">QSVC Confidence:</span>
+                                                <span class="value" id="quantumQSVCConfidence">--</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="quantum-result-section">
+                                            <h4><i class="fas fa-cogs"></i> Analysis Details</h4>
+                                            <div class="result-item">
+                                                <span class="label">Processing Time:</span>
+                                                <span class="value" id="quantumProcessingTime">--</span>
+                                            </div>
+                                            <div class="result-item">
+                                                <span class="label">Model Agreement:</span>
+                                                <span class="value" id="quantumModelAgreement">--</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

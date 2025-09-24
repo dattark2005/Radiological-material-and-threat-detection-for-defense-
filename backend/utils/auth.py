@@ -52,7 +52,11 @@ def require_role(required_roles):
 
 def get_client_ip():
     """Get client IP address from request."""
-    if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
-        return request.environ['REMOTE_ADDR']
-    else:
-        return request.environ['HTTP_X_FORWARDED_FOR']
+    try:
+        if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+            return request.environ['REMOTE_ADDR']
+        else:
+            return request.environ['HTTP_X_FORWARDED_FOR']
+    except RuntimeError:
+        # Working outside of request context (e.g., background tasks)
+        return 'background-task'

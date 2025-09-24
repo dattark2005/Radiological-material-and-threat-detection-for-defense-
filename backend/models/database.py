@@ -135,14 +135,22 @@ class AnalysisSession:
         if end_time:
             update_data['end_time'] = end_time
         return mongo.db.analysis_sessions.update_one(
-            {'_id': session_id},
+            {'_id': str(session_id)},
+            {'$set': update_data}
+        )
+    
+    @staticmethod
+    def update_by_id(session_id, update_data):
+        """Update session by ID with arbitrary data."""
+        return mongo.db.analysis_sessions.update_one(
+            {'_id': str(session_id)},
             {'$set': update_data}
         )
     
     @staticmethod
     def find_by_id(session_id):
         """Find session by ID."""
-        return mongo.db.analysis_sessions.find_one({'_id': session_id})
+        return mongo.db.analysis_sessions.find_one({'_id': str(session_id)})
     
     @staticmethod
     def find_by_user(user_id, limit=50):

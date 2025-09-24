@@ -73,7 +73,13 @@ def generate_synthetic():
         user_id = get_jwt_identity()
         data = request.get_json()
         
+        # Debug logging
+        print(f"[DEBUG] Received synthetic request data: {data}")
+        
         # Validate input
+        if not data:
+            return jsonify({'message': 'No JSON data received'}), 400
+            
         if 'isotope' not in data:
             return jsonify({'message': 'Isotope type is required'}), 400
         

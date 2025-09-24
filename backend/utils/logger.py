@@ -42,8 +42,10 @@ def log_system_event(level, message, module=None, user_id=None, session_id=None)
             ip_address=get_client_ip()
         )
     except Exception as e:
-        # Fallback to application logger if database logging fails
-        logging.error(f"Failed to log to database: {str(e)}")
+        # Fallback to standard logging if database logging fails
+        # Use standard logging instead of app logger to avoid context issues
+        import logging
+        logging.getLogger(__name__).error(f"Failed to log to database: {str(e)}")
 
 class DatabaseLogHandler(logging.Handler):
     """Custom log handler that writes to database."""

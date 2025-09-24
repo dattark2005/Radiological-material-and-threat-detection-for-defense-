@@ -20,12 +20,12 @@ if __name__ == '__main__':
     app = create_app('development')
     
     print("=" * 60)
-    print("🚀 Quantum ML Radiological Threat Detection System")
+    print("[SYSTEM] Quantum ML Radiological Threat Detection System")
     print("=" * 60)
-    print(f"📡 Server starting on: http://localhost:5000")
-    print(f"🔗 MongoDB Atlas: Connected")
-    print(f"🔐 Admin Login: admin@example.com / admin123")
-    print(f"🌐 Frontend: Open login.html in browser")
+    print(f"[SERVER] Starting on: http://localhost:5000")
+    print(f"[DATABASE] MongoDB Atlas: Connected")
+    print(f"[AUTH] Admin Login: admin@example.com / admin123")
+    print(f"[FRONTEND] Open login.html in browser")
     print("=" * 60)
     
     try:
@@ -35,11 +35,11 @@ if __name__ == '__main__':
             debug=True, 
             host='0.0.0.0', 
             port=5000,
-            use_reloader=True,
+            use_reloader=False,  # Disabled to prevent Windows socket issues
             log_output=True
         )
     except KeyboardInterrupt:
-        print("\n🛑 Server stopped by user")
+        print("\n[STOP] Server stopped by user")
     except Exception as e:
-        print(f"❌ Server error: {e}")
+        print(f"[ERROR] Server error: {e}")
         sys.exit(1)

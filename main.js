@@ -16,29 +16,65 @@ let currentAnalysisSession = null;
 
 // Authentication Guard - Check if user is logged in
 function checkAuthentication() {
+    console.log('🔐 Checking authentication...');
+    
+    // Don't redirect if we're already on the login page
+    const currentPage = window.location.pathname;
+    const isLoginPage = currentPage.includes('login.html') || currentPage.includes('debug_auth.html');
+    
+    console.log('Current page:', currentPage);
+    console.log('Is login page:', isLoginPage);
+    
     // Check localStorage first (remember me), then sessionStorage
-    authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    const userInfo = localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo');
+    const localToken = localStorage.getItem('authToken');
+    const sessionToken = sessionStorage.getItem('authToken');
+    authToken = localToken || sessionToken;
+    
+    const localUserInfo = localStorage.getItem('userInfo');
+    const sessionUserInfo = sessionStorage.getItem('userInfo');
+    const userInfo = localUserInfo || sessionUserInfo;
+    
+    console.log('Local token:', localToken ? 'exists' : 'null');
+    console.log('Session token:', sessionToken ? 'exists' : 'null');
+    console.log('Final token:', authToken ? 'exists' : 'null');
+    console.log('User info:', userInfo ? 'exists' : 'null');
     
     if (!authToken) {
-        // No token found, redirect to login
-        window.location.href = 'login.html';
+        console.log('❌ No token found');
+        if (!isLoginPage) {
+            console.log('🔄 Redirecting to login...');
+            window.location.href = 'login.html';
+        }
         return false;
     }
     
     if (userInfo) {
         try {
             currentUser = JSON.parse(userInfo);
+            console.log('✅ User info parsed successfully:', currentUser);
         } catch (e) {
-            console.error('Error parsing user info:', e);
+            console.error('❌ Error parsing user info:', e);
+            console.log('Raw user info:', userInfo);
+            // Clear corrupted data
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userInfo');
+            sessionStorage.removeItem('authToken');
+            sessionStorage.removeItem('userInfo');
+            if (!isLoginPage) {
+                window.location.href = 'login.html';
+            }
+            return false;
         }
     }
     
+    console.log('✅ Authentication check passed');
     return true;
 }
 
 // Logout function
 function logout() {
+    console.log('🚪 Logging out user...');
+    
     // Clear all stored authentication data
     localStorage.removeItem('authToken');
     localStorage.removeItem('userInfo');
@@ -49,8 +85,11 @@ function logout() {
     authToken = null;
     currentUser = null;
     
+    console.log('✅ Authentication data cleared');
+    
     // Redirect to login page
     window.location.href = 'login.html';
+    console.log('🔄 Redirecting to login page...');
 }
 
 // API Configuration
@@ -484,7 +523,7 @@ async function generateSyntheticSpectrum() {
     }
     
     const isotope = document.getElementById('isotopeSelect').value;
-    const noiseLevel = parseInt(document.getElementById('noiseLevel').value) / 10;
+    const noiseLevel = parseInt(document.getElementById('noiseLevel').value);
     
     try {
         showNotification('Generating synthetic spectrum...', 'info');
@@ -493,14 +532,11 @@ async function generateSyntheticSpectrum() {
             method: 'POST',
             body: JSON.stringify({
                 isotope: isotope,
-                activity: 1000,
-                measurement_time: 300,
-                detector_type: 'NaI',
                 noise_level: noiseLevel
             })
         });
         
-        currentSpectrumData = response.data.spectrum;
+        currentSpectrumData = response.data.spectrum_data;
         updateSpectrumChart(currentSpectrumData.energy, currentSpectrumData.counts);
         showNotification('Synthetic spectrum generated', 'success');
         
@@ -539,13 +575,16 @@ async function runAnalysis() {
             method: 'POST',
             body: JSON.stringify({
                 spectrum_data: currentSpectrumData,
-                analysis_type: 'full',
-                models: ['classical', 'quantum']
+                analysis_type: 'quantum',
+                models: ['quantum']
             })
         });
         
         currentAnalysisSession = response.data.session_id;
         showNotification('Analysis started', 'info');
+        
+        // Show analysis progress
+        showAnalysisProgress();
         
         // Poll for results
         pollAnalysisResults(currentAnalysisSession);
@@ -602,35 +641,83 @@ function resetAnalysisUI() {
         runBtn.disabled = false;
         runBtn.textContent = 'Run Analysis';
     }
+    hideAnalysisProgress();
+}
+
+function showAnalysisProgress() {
+    const progressDiv = document.getElementById('analysisProgress');
+    if (progressDiv) {
+        progressDiv.style.display = 'block';
+        
+        // Animate progress bar
+        let progress = 0;
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        
+        const progressSteps = [
+            { progress: 20, text: 'Initializing quantum circuits...' },
+            { progress: 40, text: 'Encoding spectrum data...' },
+            { progress: 60, text: 'Running VQC analysis...' },
+            { progress: 80, text: 'Running QSVC analysis...' },
+            { progress: 95, text: 'Finalizing results...' }
+        ];
+        
+        let stepIndex = 0;
+        const updateProgress = () => {
+            if (stepIndex < progressSteps.length && analysisInProgress) {
+                const step = progressSteps[stepIndex];
+                if (progressFill) progressFill.style.width = `${step.progress}%`;
+                if (progressText) progressText.textContent = step.text;
+                stepIndex++;
+                setTimeout(updateProgress, 2000);
+            }
+        };
+        
+        updateProgress();
+    }
+}
+
+function hideAnalysisProgress() {
+    const progressDiv = document.getElementById('analysisProgress');
+    if (progressDiv) {
+        progressDiv.style.display = 'none';
+    }
 }
 
 function displayAnalysisResults(results) {
-    // Update classical ML results
-    if (results.classical_result) {
-        const classical = results.classical_result;
-        const classicalThreat = document.getElementById('classicalThreat');
-        const classicalIsotope = document.getElementById('classicalIsotope');
-        const classicalConfidence = document.getElementById('classicalConfidence');
-        const classicalQuantity = document.getElementById('classicalQuantity');
-        
-        if (classicalThreat) classicalThreat.textContent = `${(classical.threat_probability * 100).toFixed(1)}%`;
-        if (classicalIsotope) classicalIsotope.textContent = classical.isotopes.join(', ');
-        if (classicalConfidence) classicalConfidence.textContent = `${(classical.confidence * 100).toFixed(1)}%`;
-        if (classicalQuantity) classicalQuantity.textContent = classical.peaks.length + ' peaks';
-    }
+    // Hide analysis progress
+    hideAnalysisProgress();
     
     // Update quantum ML results
     if (results.quantum_result) {
         const quantum = results.quantum_result;
-        const quantumThreat = document.getElementById('quantumThreat');
-        const quantumIsotope = document.getElementById('quantumIsotope');
-        const quantumConfidence = document.getElementById('quantumConfidence');
-        const quantumQuantity = document.getElementById('quantumQuantity');
         
-        if (quantumThreat) quantumThreat.textContent = `${(quantum.quantum_threat_score * 100).toFixed(1)}%`;
-        if (quantumIsotope) quantumIsotope.textContent = quantum.quantum_state.map(s => s.toFixed(3)).join(', ');
-        if (quantumConfidence) quantumConfidence.textContent = `${(quantum.quantum_confidence * 100).toFixed(1)}%`;
-        if (quantumQuantity) quantumQuantity.textContent = quantum.entanglement_measure.toFixed(3);
+        // Update threat assessment
+        const threatLevel = document.getElementById('quantumThreatLevel');
+        const threatProb = document.getElementById('quantumThreat');
+        if (threatLevel) {
+            threatLevel.textContent = quantum.threat_level || 'UNKNOWN';
+            threatLevel.className = `value threat-level ${(quantum.threat_level || 'unknown').toLowerCase()}`;
+        }
+        if (threatProb) threatProb.textContent = `${((quantum.threat_probability || 0) * 100).toFixed(1)}%`;
+        
+        // Update material identification
+        const isotope = document.getElementById('quantumIsotope');
+        const materialType = document.getElementById('quantumMaterialType');
+        if (isotope) isotope.textContent = quantum.classified_isotope || 'Unknown';
+        if (materialType) materialType.textContent = quantum.material_type || 'Unknown';
+        
+        // Update quantum metrics
+        const vqcConfidence = document.getElementById('quantumVQCConfidence');
+        const qsvcConfidence = document.getElementById('quantumQSVCConfidence');
+        if (vqcConfidence) vqcConfidence.textContent = `${((quantum.vqc_confidence || 0) * 100).toFixed(1)}%`;
+        if (qsvcConfidence) qsvcConfidence.textContent = `${((quantum.qsvc_confidence || 0) * 100).toFixed(1)}%`;
+        
+        // Update analysis details
+        const processingTime = document.getElementById('quantumProcessingTime');
+        const modelAgreement = document.getElementById('quantumModelAgreement');
+        if (processingTime) processingTime.textContent = `${(quantum.processing_time || 0).toFixed(2)}s`;
+        if (modelAgreement) modelAgreement.textContent = `${((quantum.model_agreement || 0) * 100).toFixed(1)}%`;
     }
     
     // Switch to results tab
@@ -732,6 +819,76 @@ function showTab(tabName) {
     }
 }
 
+// Alias for showTab function (for compatibility with HTML onclick handlers)
+function switchTab(tabName) {
+    showTab(tabName);
+}
+
+// Generate PDF report function
+function generateReport() {
+    if (!currentSpectrumData) {
+        showNotification('No spectrum data available for report generation', 'warning');
+        return;
+    }
+    
+    try {
+        showNotification('Generating PDF report...', 'info');
+        // This would typically call a backend endpoint to generate a PDF
+        // For now, we'll show a placeholder
+        setTimeout(() => {
+            showNotification('PDF report generation feature coming soon', 'info');
+        }, 1000);
+    } catch (error) {
+        showNotification('Failed to generate report: ' + error.message, 'error');
+    }
+}
+
+// Clear spectrum data function
+function clearSpectrum() {
+    if (confirm('Are you sure you want to clear the current spectrum?')) {
+        currentSpectrumData = null;
+        
+        // Clear the chart
+        if (spectrumChart) {
+            spectrumChart.destroy();
+            spectrumChart = null;
+        }
+        
+        // Reset file info
+        updateFileInfo('', '', 0);
+        
+        // Disable analysis button
+        const runAnalysisBtn = document.getElementById('runAnalysisBtn');
+        if (runAnalysisBtn) {
+            runAnalysisBtn.disabled = true;
+        }
+        
+        showNotification('Spectrum data cleared', 'success');
+    }
+}
+
+// Search isotopes function
+function searchIsotopes() {
+    const searchInput = document.getElementById('isotopeSearch');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    
+    if (!searchTerm) {
+        showNotification('Please enter a search term', 'warning');
+        return;
+    }
+    
+    try {
+        // This would typically search through the isotope database
+        // For now, we'll show a placeholder
+        showNotification(`Searching for isotopes containing "${searchTerm}"...`, 'info');
+        setTimeout(() => {
+            showNotification('Isotope search feature coming soon', 'info');
+        }, 1000);
+    } catch (error) {
+        showNotification('Search failed: ' + error.message, 'error');
+    }
+}
+
 function updateSystemStats() {
     const uptime = Math.floor((Date.now() - systemStartTime) / 1000);
     const hours = Math.floor(uptime / 3600);
@@ -792,14 +949,11 @@ function startLiveMode() {
                 method: 'POST',
                 body: JSON.stringify({
                     isotope: randomIsotope,
-                    activity: 500 + Math.random() * 1000,
-                    measurement_time: 300,
-                    detector_type: 'NaI',
-                    noise_level: randomNoise / 10
+                    noise_level: randomNoise
                 })
             });
             
-            currentSpectrumData = response.data.spectrum;
+            currentSpectrumData = response.data.spectrum_data;
             
             if (document.querySelector('[data-tab="upload"]').classList.contains('active')) {
                 updateSpectrumChart(currentSpectrumData.energy, currentSpectrumData.counts);
@@ -948,6 +1102,56 @@ function populateIsotopeDatabase() {
     `).join('');
 }
 
-// Initialize logging
-addLogEntry('INFO', 'Radiological Threat Detection System initialized');
-addLogEntry('INFO', 'Frontend-Backend integration active');
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM Content Loaded - Starting authentication check...');
+    
+    // Don't run dashboard initialization on login pages
+    const currentPage = window.location.pathname;
+    const isLoginPage = currentPage.includes('login.html') || currentPage.includes('debug_auth.html');
+    
+    if (isLoginPage) {
+        console.log('📝 On login page - skipping dashboard initialization');
+        return;
+    }
+    
+    // Check authentication first
+    if (!checkAuthentication()) {
+        console.log('❌ Authentication failed - redirecting to login');
+        return; // Will redirect to login if not authenticated
+    }
+    
+    console.log('✅ Authentication successful');
+    console.log('Current user:', currentUser);
+    
+    // Update UI with user info
+    if (currentUser) {
+        const userElement = document.getElementById('currentUser');
+        if (userElement) {
+            userElement.textContent = currentUser.username || currentUser.email || 'User';
+            console.log('✅ Updated user display');
+        } else {
+            console.log('⚠️ currentUser element not found');
+        }
+    }
+    
+    // Initialize other components
+    try {
+        populateIsotopeDatabase();
+        console.log('✅ Isotope database populated');
+    } catch (e) {
+        console.error('❌ Error populating isotope database:', e);
+    }
+    
+    // Initialize logging
+    try {
+        addLogEntry('INFO', 'Radiological Threat Detection System initialized');
+        addLogEntry('INFO', 'Frontend-Backend integration active');
+        addLogEntry('INFO', `User logged in: ${currentUser ? currentUser.email : 'Unknown'}`);
+        console.log('✅ Logging initialized');
+    } catch (e) {
+        console.error('❌ Error initializing logging:', e);
+    }
+    
+    console.log('🎉 Application initialization complete');
+});
