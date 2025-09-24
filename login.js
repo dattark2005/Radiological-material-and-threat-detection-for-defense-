@@ -68,14 +68,14 @@ async function handleLogin(e) {
         
         const data = await response.json();
         
-        if (response.ok && data.success) {
+        if (response.ok && data.token) {
             // Store authentication token
             if (rememberMe) {
-                localStorage.setItem('authToken', data.data.access_token);
-                localStorage.setItem('userInfo', JSON.stringify(data.data.user));
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('userInfo', JSON.stringify(data.user));
             } else {
-                sessionStorage.setItem('authToken', data.data.access_token);
-                sessionStorage.setItem('userInfo', JSON.stringify(data.data.user));
+                sessionStorage.setItem('authToken', data.token);
+                sessionStorage.setItem('userInfo', JSON.stringify(data.user));
             }
             
             showNotification('Login successful! Redirecting...', 'success');
@@ -139,7 +139,7 @@ async function handleRegister(e) {
         
         const data = await response.json();
         
-        if (response.ok && data.success) {
+        if (response.ok && data.message && data.message.includes('successfully')) {
             showNotification('Registration successful! Please login with your credentials.', 'success');
             
             // Switch back to login form and pre-fill email

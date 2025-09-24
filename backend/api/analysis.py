@@ -6,7 +6,7 @@ import time
 
 from models.database import AnalysisSession, MLResult, ThreatAssessment, SpectrumUpload, mongo
 from services.ml_service import ClassicalMLService
-from services.quantum_service import QuantumMLService
+from services.real_quantum_service import RealQuantumMLService
 from services.threat_service import ThreatAssessmentService
 from utils.logger import log_system_event
 
@@ -78,20 +78,19 @@ def run_analysis():
 def perform_analysis_async(session_id, spectrum_data, analysis_type):
     """Perform analysis asynchronously."""
     from app import create_app
-    from bson import ObjectId
     
     app = create_app()
     with app.app_context():
         try:
             # Update session status
-            AnalysisSession.update_by_id(ObjectId(session_id), {
+            AnalysisSession.update_by_id(session_id, {
                 'status': 'running',
                 'start_time': datetime.utcnow()
             })
             
             # Initialize services
             classical_service = ClassicalMLService()
-            quantum_service = QuantumMLService()
+            quantum_service = RealQuantumMLService()
             threat_service = ThreatAssessmentService()
             
             results = []
@@ -148,7 +147,7 @@ def perform_analysis_async(session_id, spectrum_data, analysis_type):
             ThreatAssessment.create(assessment_doc)
             
             # Update session
-            AnalysisSession.update_by_id(ObjectId(session_id), {
+            AnalysisSession.update_by_id(session_id, {
                 'status': 'completed',
                 'end_time': datetime.utcnow()
             })
@@ -161,7 +160,7 @@ def perform_analysis_async(session_id, spectrum_data, analysis_type):
             
         except Exception as e:
             # Mark session as failed
-            AnalysisSession.update_by_id(ObjectId(session_id), {
+            AnalysisSession.update_by_id(session_id, {
                 'status': 'failed',
                 'end_time': datetime.utcnow()
             })
@@ -175,9 +174,8 @@ def get_analysis_status(session_id):
     try:
         user_id = get_jwt_identity()
         
-        from bson import ObjectId
         try:
-            session = AnalysisSession.find_by_id(ObjectId(session_id))
+            session = AnalysisSession.find_by_id(session_id)
         except:
             return jsonify({'message': 'Invalid session ID'}), 400
             
@@ -207,9 +205,8 @@ def get_analysis_results(session_id):
     try:
         user_id = get_jwt_identity()
         
-        from bson import ObjectId
         try:
-            session = AnalysisSession.find_by_id(ObjectId(session_id))
+            session = AnalysisSession.find_by_id(session_id)
         except:
             return jsonify({'message': 'Invalid session ID'}), 400
             
@@ -301,9 +298,8 @@ def cancel_analysis(session_id):
     try:
         user_id = get_jwt_identity()
         
-        from bson import ObjectId
         try:
-            session = AnalysisSession.find_by_id(ObjectId(session_id))
+            session = AnalysisSession.find_by_id(session_id)
         except:
             return jsonify({'message': 'Invalid session ID'}), 400
         if not session:
@@ -318,7 +314,7 @@ def cancel_analysis(session_id):
             return jsonify({'message': 'Cannot cancel completed analysis'}), 400
         
         # Update status
-        AnalysisSession.update_by_id(ObjectId(session_id), {
+        AnalysisSession.update_by_id(session_id, {
             'status': 'cancelled',
             'end_time': datetime.utcnow()
         })

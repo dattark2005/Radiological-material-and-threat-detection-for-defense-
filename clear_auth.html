@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Authentication Data</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #1a1a1a; 
+            color: white; 
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px;
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+        button { 
+            padding: 15px 30px; 
+            margin: 10px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        button:hover { background: #45a049; }
+        .clear-btn { background: #f44336; }
+        .clear-btn:hover { background: #da190b; }
+        .success { color: #4CAF50; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Clear Authentication Data</h1>
+        <p>This will clear all stored login data and reset the authentication state.</p>
+        
+        <button onclick="clearAllData()" class="clear-btn">Clear All Authentication Data</button>
+        <button onclick="goToLogin()">Go to Login Page</button>
+        <button onclick="goToDashboard()">Go to Dashboard</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function clearAllData() {
+            // Clear all storage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Clear any cookies (just in case)
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            document.getElementById('result').innerHTML = '<div class="success">✅ All authentication data cleared successfully!</div>';
+            
+            console.log('🧹 All authentication data cleared');
+        }
+        
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+        
+        function goToDashboard() {
+            window.location.href = 'index.html';
+        }
+        
+        // Auto-clear on page load
+        window.onload = function() {
+            clearAllData();
+        };
+    </script>
+</body>
+</html>

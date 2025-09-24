@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .debug-section { margin: 20px 0; padding: 15px; background: #2a2a2a; border-radius: 5px; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button { padding: 10px 20px; margin: 5px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .clear-btn { background: #f44336; }
+        .clear-btn:hover { background: #da190b; }
+        pre { background: #333; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Authentication Debug Tool</h1>
+    
+    <div class="debug-section">
+        <h3>Current Storage Status</h3>
+        <div id="storageStatus"></div>
+        <button onclick="checkStorage()">Check Storage</button>
+        <button onclick="clearStorage()" class="clear-btn">Clear All Storage</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Test Login</h3>
+        <input type="email" id="testEmail" placeholder="Email" value="admin@example.com">
+        <input type="password" id="testPassword" placeholder="Password" value="admin123">
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Backend Connection Test</h3>
+        <button onclick="testBackend()">Test Backend</button>
+        <div id="backendResult"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Navigation Test</h3>
+        <button onclick="goToLogin()">Go to Login Page</button>
+        <button onclick="goToDashboard()">Go to Dashboard</button>
+        <button onclick="testAuthCheck()">Test Auth Check</button>
+    </div>
+
+    <script>
+        function checkStorage() {
+            const result = document.getElementById('storageStatus');
+            
+            const localStorage_token = localStorage.getItem('authToken');
+            const sessionStorage_token = sessionStorage.getItem('authToken');
+            const localStorage_user = localStorage.getItem('userInfo');
+            const sessionStorage_user = sessionStorage.getItem('userInfo');
+            
+            result.innerHTML = `
+                <h4>LocalStorage:</h4>
+                <pre>authToken: ${localStorage_token || 'null'}</pre>
+                <pre>userInfo: ${localStorage_user || 'null'}</pre>
+                
+                <h4>SessionStorage:</h4>
+                <pre>authToken: ${sessionStorage_token || 'null'}</pre>
+                <pre>userInfo: ${sessionStorage_user || 'null'}</pre>
+            `;
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.getElementById('storageStatus').innerHTML = '<span class="success">✅ All storage cleared</span>';
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            const result = document.getElementById('loginResult');
+            
+            result.innerHTML = '<span class="info">🔄 Testing login...</span>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <h4>Response Status: ${response.status}</h4>
+                    <h4>Response Data:</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                if (response.ok && data.token) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userInfo', JSON.stringify(data.user));
+                    result.innerHTML += '<span class="success">✅ Token stored in localStorage</span>';
+                } else {
+                    result.innerHTML += '<span class="error">❌ Login failed</span>';
+                }
+                
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function testBackend() {
+            const result = document.getElementById('backendResult');
+            result.innerHTML = '<span class="info">🔄 Testing backend connection...</span>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/health');
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <span class="success">✅ Backend is running</span>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Backend connection failed: ${error.message}</span>`;
+            }
+        }
+        
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+        
+        function goToDashboard() {
+            window.location.href = 'index.html';
+        }
+        
+        function testAuthCheck() {
+            // Simulate the auth check from main.js
+            const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            const userInfo = localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo');
+            
+            const result = document.getElementById('storageStatus');
+            
+            if (!authToken) {
+                result.innerHTML = '<span class="error">❌ No auth token found - would redirect to login</span>';
+            } else {
+                try {
+                    const user = JSON.parse(userInfo);
+                    result.innerHTML = `
+                        <span class="success">✅ Auth token found</span>
+                        <h4>User Info:</h4>
+                        <pre>${JSON.stringify(user, null, 2)}</pre>
+                        <span class="success">✅ Would allow access to dashboard</span>
+                    `;
+                } catch (e) {
+                    result.innerHTML = '<span class="error">❌ Invalid user info format</span>';
+                }
+            }
+        }
+        
+        // Auto-check storage on load
+        window.onload = function() {
+            checkStorage();
+        };
+    </script>
+</body>
+</html>
