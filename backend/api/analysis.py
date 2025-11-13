@@ -28,31 +28,26 @@ def run_analysis():
         analysis_type = data.get('analysis_type', 'both')  # classical, quantum, both
         session_name = data.get('session_name', f'Analysis_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}')
         
-        # Create analysis session document
-        session_doc = {
-            'session_name': session_name,
-            'user_id': user_id,
-            'analysis_type': analysis_type,
-            'status': 'pending'
-        }
-        
-        # Link to spectrum upload if provided
+        # Prepare session parameters
+        spectrum_upload_id = None
         if 'upload_id' in data:
             from bson import ObjectId
             try:
                 upload = SpectrumUpload.find_by_id(ObjectId(data['upload_id']))
                 if upload and upload.get('user_id') == user_id:
-                    session_doc['spectrum_upload_id'] = data['upload_id']
+                    spectrum_upload_id = data['upload_id']
             except:
                 pass
         
-        # Set synthetic parameters if applicable
-        if 'synthetic_isotope' in data:
-            session_doc['synthetic_isotope'] = data['synthetic_isotope']
-        if 'noise_level' in data:
-            session_doc['noise_level'] = data['noise_level']
-        
-        result = AnalysisSession.create(session_doc)
+        # Create analysis session using the correct method signature
+        result = AnalysisSession.create(
+            user_id=user_id,
+            session_name=session_name,
+            spectrum_upload_id=spectrum_upload_id,
+            analysis_type=analysis_type,
+            synthetic_isotope=data.get('synthetic_isotope'),
+            noise_level=data.get('noise_level', 1)
+        )
         session_id = result.inserted_id
         
         # Start analysis in background thread
@@ -77,6 +72,9 @@ def run_analysis():
 
 def perform_analysis_async(session_id, spectrum_data, analysis_type):
     """Perform analysis asynchronously."""
+    print(f"[DEBUG] Starting analysis for session {session_id}, type: {analysis_type}")
+    print(f"[DEBUG] Spectrum data keys: {spectrum_data.keys() if isinstance(spectrum_data, dict) else 'Not a dict'}")
+    
     from app import create_app
     
     app = create_app()
@@ -99,52 +97,20 @@ def perform_analysis_async(session_id, spectrum_data, analysis_type):
             if analysis_type in ['classical', 'both']:
                 classical_result = classical_service.analyze(spectrum_data)
                 
-                ml_result_doc = {
-                    'analysis_session_id': session_id,
-                    'model_type': 'classical',
-                    'threat_probability': classical_result['threat_probability'],
-                    'classified_isotope': classical_result['classified_isotope'],
-                    'confidence_level': classical_result['confidence_level'],
-                    'material_quantity': classical_result['material_quantity'],
-                    'detected_peaks': classical_result['detected_peaks'],
-                    'model_confidence': classical_result['model_confidence'],
-                    'processing_time': classical_result['processing_time']
-                }
-                MLResult.create(ml_result_doc)
+                MLResult.create(session_id, 'classical', classical_result)
                 results.append(classical_result)
             
             # Run quantum analysis
             if analysis_type in ['quantum', 'both']:
                 quantum_result = quantum_service.analyze(spectrum_data)
                 
-                ml_result_doc = {
-                    'analysis_session_id': session_id,
-                    'model_type': 'quantum',
-                    'threat_probability': quantum_result['threat_probability'],
-                    'classified_isotope': quantum_result['classified_isotope'],
-                    'confidence_level': quantum_result['confidence_level'],
-                    'material_quantity': quantum_result['material_quantity'],
-                    'detected_peaks': quantum_result['detected_peaks'],
-                    'model_confidence': quantum_result['model_confidence'],
-                    'processing_time': quantum_result['processing_time']
-                }
-                MLResult.create(ml_result_doc)
+                MLResult.create(session_id, 'quantum', quantum_result)
                 results.append(quantum_result)
             
             # Perform threat assessment
             threat_assessment = threat_service.assess_threat(results)
             
-            assessment_doc = {
-                'analysis_session_id': session_id,
-                'threat_level': threat_assessment['threat_level'],
-                'overall_threat_probability': threat_assessment['overall_threat_probability'],
-                'consensus_isotope': threat_assessment['consensus_isotope'],
-                'contamination_radius': threat_assessment['contamination_radius'],
-                'evacuation_recommended': threat_assessment['evacuation_recommended'],
-                'emergency_response_level': threat_assessment['emergency_response_level'],
-                'model_agreement': threat_assessment['model_agreement']
-            }
-            ThreatAssessment.create(assessment_doc)
+            ThreatAssessment.create(session_id, threat_assessment)
             
             # Update session
             AnalysisSession.update_by_id(session_id, {
@@ -159,10 +125,16 @@ def perform_analysis_async(session_id, spectrum_data, analysis_type):
             log_system_event('INFO', f'Analysis completed: {session_id}', 'analysis')
             
         except Exception as e:
+            print(f"[ERROR] Analysis failed for session {session_id}: {str(e)}")
+            print(f"[ERROR] Exception type: {type(e).__name__}")
+            import traceback
+            print(f"[ERROR] Traceback: {traceback.format_exc()}")
+            
             # Mark session as failed
             AnalysisSession.update_by_id(session_id, {
                 'status': 'failed',
-                'end_time': datetime.utcnow()
+                'end_time': datetime.utcnow(),
+                'error_message': str(e)
             })
             
             log_system_event('ERROR', f'Analysis failed: {session_id} - {str(e)}', 'analysis')
@@ -173,17 +145,23 @@ def get_analysis_status(session_id):
     """Get analysis session status."""
     try:
         user_id = get_jwt_identity()
+        print(f"[DEBUG] Status check - User ID: {user_id}, Session ID: {session_id}")
         
         try:
             session = AnalysisSession.find_by_id(session_id)
-        except:
+        except Exception as e:
+            print(f"[DEBUG] Error finding session: {e}")
             return jsonify({'message': 'Invalid session ID'}), 400
             
         if not session:
+            print(f"[DEBUG] Session not found: {session_id}")
             return jsonify({'message': 'Analysis session not found'}), 404
+        
+        print(f"[DEBUG] Session found - Session user_id: {session.get('user_id')}, Current user_id: {user_id}")
         
         # Check ownership
         if session.get('user_id') != user_id:
+            print(f"[DEBUG] Access denied - Session owner: {session.get('user_id')}, Current user: {user_id}")
             return jsonify({'message': 'Access denied'}), 403
         
         # Convert ObjectId to string for JSON serialization

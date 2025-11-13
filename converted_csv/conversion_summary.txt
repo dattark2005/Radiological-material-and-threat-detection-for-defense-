@@ -1,0 +1,8 @@
+SPE to CSV Conversion Summary
+==============================
+Total_Files_Processed: 1591
+Total_Spectra_Points: 11022193
+Unique_Isotopes: 3
+Isotope_Counts: {'U': 6365098, 'Pu': 4231121, 'MOX': 425974}
+Energy_Range_keV: -8.57 - 3003.10
+Failed_Files: 0

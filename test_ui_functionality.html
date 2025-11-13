@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Functionality Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .test-button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 UI Functionality Test</h1>
+    
+    <div class="test-section">
+        <h2>Tab Switching Test</h2>
+        <p>Click these buttons to test tab switching:</p>
+        <button class="test-button" onclick="testTabSwitch('dashboard')">Dashboard</button>
+        <button class="test-button" onclick="testTabSwitch('upload')">Upload</button>
+        <button class="test-button" onclick="testTabSwitch('analysis')">Analysis</button>
+        <button class="test-button" onclick="testTabSwitch('emergency')">Emergency</button>
+        <button class="test-button" onclick="testTabSwitch('logs')">Logs</button>
+        <div id="tab-test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Element Existence Test</h2>
+        <button class="test-button" onclick="testElementsExist()">Check All Elements</button>
+        <div id="element-test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Event Listener Test</h2>
+        <button class="test-button" onclick="testEventListeners()">Check Event Listeners</button>
+        <div id="event-test-result"></div>
+    </div>
+
+    <script>
+        // Test tab switching functionality
+        function testTabSwitch(tabName) {
+            const result = document.getElementById('tab-test-result');
+            
+            // Check if tab content exists
+            const tabContent = document.getElementById(tabName);
+            if (!tabContent) {
+                result.innerHTML = `<div class="error">❌ Tab content '${tabName}' not found</div>`;
+                return;
+            }
+            
+            // Check if nav item exists
+            const navItem = document.querySelector(`[data-tab="${tabName}"]`);
+            if (!navItem) {
+                result.innerHTML = `<div class="error">❌ Nav item for '${tabName}' not found</div>`;
+                return;
+            }
+            
+            result.innerHTML = `<div class="success">✅ Tab '${tabName}' elements exist and are accessible</div>`;
+        }
+        
+        // Test if all required elements exist
+        function testElementsExist() {
+            const result = document.getElementById('element-test-result');
+            const requiredElements = [
+                'generateBtn', 'runAnalysisBtn', 'exportPdfBtn', 'clearDataBtn',
+                'isotopeSelect', 'noiseLevel', 'spectrumChart',
+                'quantumThreatLevel', 'quantumThreat', 'quantumIsotope',
+                'quantumMaterialType', 'quantumVQCConfidence', 'quantumQSVCConfidence',
+                'quantumProcessingTime', 'quantumModelAgreement'
+            ];
+            
+            let missing = [];
+            let found = [];
+            
+            requiredElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    found.push(id);
+                } else {
+                    missing.push(id);
+                }
+            });
+            
+            let html = `<div class="info">Found ${found.length}/${requiredElements.length} elements</div>`;
+            
+            if (missing.length > 0) {
+                html += `<div class="error">❌ Missing elements: ${missing.join(', ')}</div>`;
+            } else {
+                html += `<div class="success">✅ All required elements found!</div>`;
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        // Test event listeners
+        function testEventListeners() {
+            const result = document.getElementById('event-test-result');
+            const buttons = ['generateBtn', 'runAnalysisBtn', 'exportPdfBtn', 'clearDataBtn'];
+            
+            let working = [];
+            let notWorking = [];
+            
+            buttons.forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    // Check if button has event listeners (this is a simplified check)
+                    const hasListeners = button.onclick !== null || 
+                                       (button._listeners && button._listeners.click) ||
+                                       button.getAttribute('onclick');
+                    
+                    if (hasListeners) {
+                        working.push(id);
+                    } else {
+                        notWorking.push(id);
+                    }
+                } else {
+                    notWorking.push(id + ' (not found)');
+                }
+            });
+            
+            let html = '';
+            if (working.length > 0) {
+                html += `<div class="success">✅ Buttons with handlers: ${working.join(', ')}</div>`;
+            }
+            if (notWorking.length > 0) {
+                html += `<div class="error">❌ Buttons without handlers: ${notWorking.join(', ')}</div>`;
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            console.log('🧪 Running automatic UI tests...');
+            setTimeout(() => {
+                testElementsExist();
+                testEventListeners();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

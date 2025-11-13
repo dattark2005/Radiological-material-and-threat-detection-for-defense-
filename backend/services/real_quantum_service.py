@@ -35,7 +35,13 @@ class RealQuantumMLService:
     def load_models(self):
         """Load trained quantum models."""
         try:
-            model_dir = 'quantum_models'
+            # Get the project root directory (parent of backend)
+            current_dir = os.path.dirname(os.path.abspath(__file__))  # services directory
+            backend_dir = os.path.dirname(current_dir)  # backend directory
+            project_root = os.path.dirname(backend_dir)  # project root directory
+            model_dir = os.path.join(project_root, 'quantum_models')
+            
+            print(f"[INFO] Loading quantum models from: {model_dir}")
             
             # Load VQC model
             vqc_path = os.path.join(model_dir, 'quantum_vqc.joblib')
