@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.26.0/plotly.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
@@ -19,20 +23,180 @@
             </div>
             <div class="header-right">
                 <div class="header-actions">
-                    <div class="user-info">
-                        <i class="fas fa-user-circle"></i>
-                        <span id="currentUser">Admin User</span>
+                    <!-- System Status -->
+                    <div class="system-status">
+                        <div class="status-indicator">
+                            <i class="fas fa-check-circle" style="color: #4caf50; font-size: 0.9rem;"></i>
+                            <span class="status-text">System Online</span>
+                        </div>
                     </div>
-                    <button class="btn btn-secondary" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Logout
-                    </button>
+                    
+                    <!-- Notifications -->
+                    <div class="notification-center">
+                        <button class="notification-btn" id="notificationBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge" id="notificationBadge">3</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Ultra Premium Profile Corner -->
+                    <div class="premium-profile-corner">
+                        <!-- Quick Actions Bar -->
+                        <div class="quick-actions-bar">
+                            <button class="quick-action-btn" id="settingsBtn" title="Settings">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <button class="quick-action-btn" id="helpBtn" title="Help">
+                                <i class="fas fa-question-circle"></i>
+                            </button>
+                            <button class="quick-action-btn" id="fullscreenBtn" title="Fullscreen">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Premium Profile Container -->
+                        <div class="premium-profile-container">
+                            <div class="profile-trigger-premium" id="profileTriggerPremium">
+                                <!-- Role Badge -->
+                                <div class="role-badge" id="roleBadge">
+                                    <i class="fas fa-shield-alt" id="roleIcon"></i>
+                                    <span id="roleText">ADMIN</span>
+                                </div>
+                                
+                                <!-- Avatar with Status Ring -->
+                                <div class="avatar-container">
+                                    <div class="status-ring" id="statusRing">
+                                        <div class="avatar-premium">
+                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23667eea'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='35' font-family='Arial' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E" alt="User Avatar" id="userAvatarPremium">
+                                            <div class="avatar-glow"></div>
+                                        </div>
+                                    </div>
+                                    <div class="status-indicator-premium" id="statusIndicatorPremium">
+                                        <div class="pulse-ring"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Profile Info -->
+                                <div class="profile-info-premium">
+                                    <div class="profile-name-premium" id="profileNamePremium">Admin User</div>
+                                    <div class="profile-role-premium" id="profileRolePremium">System Administrator</div>
+                                    <div class="profile-status" id="profileStatus">Online</div>
+                                </div>
+                                
+                                <!-- Dropdown Arrow -->
+                                <div class="dropdown-arrow-premium">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Ultra Premium Dropdown -->
+                            <div class="premium-dropdown" id="premiumDropdown">
+                                <!-- Dropdown Header with Gradient -->
+                                <div class="dropdown-header-premium">
+                                    <div class="header-background"></div>
+                                    <div class="header-content">
+                                        <div class="dropdown-avatar-premium">
+                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23667eea'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='35' font-family='Arial' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E" alt="User Avatar" id="dropdownAvatarPremium">
+                                            <div class="avatar-border-glow"></div>
+                                        </div>
+                                        <div class="dropdown-info-premium">
+                                            <h3 id="dropdownNamePremium">Admin User</h3>
+                                            <p id="dropdownEmailPremium">admin@example.com</p>
+                                            <div class="badges-container">
+                                                <span class="premium-badge" id="premiumBadge">PREMIUM</span>
+                                                <span class="role-badge-small" id="roleBadgeSmall">ADMIN</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Stats Section -->
+                                <div class="profile-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-value" id="sessionsCount">24</div>
+                                        <div class="stat-label">Sessions</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value" id="analysesCount">156</div>
+                                        <div class="stat-label">Analyses</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value" id="uptime">99.9%</div>
+                                        <div class="stat-label">Uptime</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Premium Menu -->
+                                <div class="dropdown-menu-premium">
+                                    <div class="menu-section">
+                                        <div class="section-title">Account</div>
+                                        <a href="#" class="dropdown-item-premium" onclick="showProfile()">
+                                            <div class="item-icon">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
+                                            <div class="item-content">
+                                                <span class="item-title">Profile Settings</span>
+                                                <span class="item-subtitle">Manage your account</span>
+                                            </div>
+                                            <i class="fas fa-chevron-right item-arrow"></i>
+                                        </a>
+                                        <a href="#" class="dropdown-item-premium" onclick="showPreferences()">
+                                            <div class="item-icon">
+                                                <i class="fas fa-sliders-h"></i>
+                                            </div>
+                                            <div class="item-content">
+                                                <span class="item-title">Preferences</span>
+                                                <span class="item-subtitle">Customize your experience</span>
+                                            </div>
+                                            <i class="fas fa-chevron-right item-arrow"></i>
+                                        </a>
+                                    </div>
+                                    
+                                    <div class="menu-section">
+                                        <div class="section-title">System</div>
+                                        <a href="#" class="dropdown-item-premium" onclick="showActivity()">
+                                            <div class="item-icon">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </div>
+                                            <div class="item-content">
+                                                <span class="item-title">Activity Dashboard</span>
+                                                <span class="item-subtitle">View your analytics</span>
+                                            </div>
+                                            <i class="fas fa-chevron-right item-arrow"></i>
+                                        </a>
+                                        <a href="#" class="dropdown-item-premium" onclick="showHelp()">
+                                            <div class="item-icon">
+                                                <i class="fas fa-life-ring"></i>
+                                            </div>
+                                            <div class="item-content">
+                                                <span class="item-title">Help & Support</span>
+                                                <span class="item-subtitle">Get assistance</span>
+                                            </div>
+                                            <i class="fas fa-chevron-right item-arrow"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Premium Logout Button -->
+                                <div class="logout-section">
+                                    <button class="premium-logout-btn" onclick="logout()" id="premiumLogoutBtn">
+                                        <div class="logout-icon">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </div>
+                                        <div class="logout-content">
+                                            <span class="logout-title">Sign Out</span>
+                                            <span class="logout-subtitle">End your session securely</span>
+                                        </div>
+                                        <div class="logout-arrow">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <span class="group-info">Group 07 | ML Project</span>
-                <div class="status-indicator">
-                    <span class="status-dot active"></span>
-                    <span>System Online</span>
-                </div>
+                <!-- <span class="group-info">Group 10 | ML Project</span> -->
             </div>
         </header>
 
@@ -52,6 +216,10 @@
                     <div class="nav-item" data-tab="analysis">
                         <i class="fas fa-chart-line"></i>
                         <span>Analysis Results</span>
+                    </div>
+                    <div class="nav-item" data-tab="explanations">
+                        <i class="fas fa-brain"></i>
+                        <span>AI Explanations</span>
                     </div>
                     <div class="nav-item" data-tab="emergency">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -80,50 +248,328 @@
             <main class="content-area">
                 <!-- Dashboard Tab -->
                 <div class="tab-content active" id="dashboard">
-                    <div class="dashboard-grid">
-                        <!-- System Overview -->
-                        <div class="card system-overview">
-                            <h3><i class="fas fa-shield-alt"></i> System Overview</h3>
-                            <div class="overview-stats">
-                                <div class="stat">
-                                    <span class="stat-value" id="totalScans">0</span>
-                                    <span class="stat-label">Total Scans</span>
+                    <!-- Premium Dashboard Header -->
+                    <div class="dashboard-header">
+                        <div class="dashboard-title">
+                            <h1><i class="fas fa-tachometer-alt"></i> Command Center</h1>
+                            <p>Real-time radiological threat monitoring and analysis</p>
+                        </div>
+                        <div class="dashboard-status">
+                            <div class="status-badge operational">
+                                <i class="fas fa-check-circle"></i>
+                                <span>All Systems Operational</span>
+                            </div>
+                            <div class="last-updated">
+                                Last updated: <span id="lastUpdated">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Premium Dashboard Grid -->
+                    <div class="premium-dashboard-grid">
+                        <!-- System Metrics Row -->
+                        <div class="metrics-row">
+                            <!-- Total Scans Card -->
+                            <div class="metric-card scans-card">
+                                <div class="metric-header">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>+12%</span>
+                                    </div>
                                 </div>
-                                <div class="stat">
-                                    <span class="stat-value" id="threatsDetected">0</span>
-                                    <span class="stat-label">Threats Detected</span>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="totalScans">0</div>
+                                    <div class="metric-label">Total Scans</div>
+                                    <div class="metric-subtitle">This session</div>
                                 </div>
-                                <div class="stat">
-                                    <span class="stat-value" id="systemUptime">00:00:00</span>
-                                    <span class="stat-label">System Uptime</span>
+                                <div class="metric-chart">
+                                    <canvas id="scansChart" width="100" height="40"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Threats Detected Card -->
+                            <div class="metric-card threats-card">
+                                <div class="metric-header">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="metric-trend stable">
+                                        <i class="fas fa-minus"></i>
+                                        <span>0%</span>
+                                    </div>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="threatsDetected">0</div>
+                                    <div class="metric-label">Threats Detected</div>
+                                    <div class="metric-subtitle">Active alerts</div>
+                                </div>
+                                <div class="metric-chart">
+                                    <canvas id="threatsChart" width="100" height="40"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- System Uptime Card -->
+                            <div class="metric-card uptime-card">
+                                <div class="metric-header">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>99.9%</span>
+                                    </div>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="systemUptime">00:00:00</div>
+                                    <div class="metric-label">System Uptime</div>
+                                    <div class="metric-subtitle">Continuous operation</div>
+                                </div>
+                                <div class="metric-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 99.9%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Processing Speed Card -->
+                            <div class="metric-card speed-card">
+                                <div class="metric-header">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>+5%</span>
+                                    </div>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="processingSpeed">2.3s</div>
+                                    <div class="metric-label">Avg Processing</div>
+                                    <div class="metric-subtitle">Per analysis</div>
+                                </div>
+                                <div class="metric-gauge">
+                                    <div class="gauge-container">
+                                        <div class="gauge-fill" style="--gauge-value: 75%"></div>
+                                        <div class="gauge-center">Fast</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Current Threat Level -->
-                        <div class="card threat-level">
-                            <h3><i class="fas fa-exclamation-circle"></i> Current Threat Level</h3>
-                            <div class="threat-indicator" id="threatIndicator">
-                                <div class="threat-level-display clear">
-                                    <span class="threat-text">CLEAR</span>
-                                    <span class="threat-description">No threats detected</span>
+                        <!-- Main Content Row -->
+                        <div class="main-content-row">
+                            <!-- Threat Level Display -->
+                            <div class="threat-level-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-shield-alt"></i> Current Threat Level</h3>
+                                    <div class="threat-controls">
+                                        <button class="btn-icon" id="refreshThreatBtn" title="Refresh">
+                                            <i class="fas fa-sync"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="threat-display" id="threatIndicator">
+                                    <div class="threat-level-visual">
+                                        <div class="threat-circle clear">
+                                            <div class="threat-pulse"></div>
+                                            <div class="threat-content">
+                                                <div class="threat-text">CLEAR</div>
+                                                <div class="threat-level-number">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="threat-info">
+                                        <div class="threat-description">No immediate threats detected</div>
+                                        <div class="threat-details">
+                                            <div class="detail-item">
+                                                <span class="detail-label">Confidence:</span>
+                                                <span class="detail-value">99.2%</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Last Scan:</span>
+                                                <span class="detail-value" id="lastScanTime">--</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Background:</span>
+                                                <span class="detail-value">Normal</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- System Health Monitor -->
+                            <div class="health-monitor-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-heartbeat"></i> System Health</h3>
+                                    <div class="health-status all-good">
+                                        <i class="fas fa-check"></i> All Good
+                                    </div>
+                                </div>
+                                <div class="health-metrics">
+                                    <div class="health-item">
+                                        <div class="health-label">
+                                            <i class="fas fa-microchip"></i>
+                                            CPU Usage
+                                        </div>
+                                        <div class="health-bar">
+                                            <div class="health-fill cpu" style="width: 45%"></div>
+                                            <span class="health-value">45%</span>
+                                        </div>
+                                    </div>
+                                    <div class="health-item">
+                                        <div class="health-label">
+                                            <i class="fas fa-memory"></i>
+                                            Memory
+                                        </div>
+                                        <div class="health-bar">
+                                            <div class="health-fill memory" style="width: 62%"></div>
+                                            <span class="health-value">62%</span>
+                                        </div>
+                                    </div>
+                                    <div class="health-item">
+                                        <div class="health-label">
+                                            <i class="fas fa-hdd"></i>
+                                            Storage
+                                        </div>
+                                        <div class="health-bar">
+                                            <div class="health-fill storage" style="width: 28%"></div>
+                                            <span class="health-value">28%</span>
+                                        </div>
+                                    </div>
+                                    <div class="health-item">
+                                        <div class="health-label">
+                                            <i class="fas fa-network-wired"></i>
+                                            Network
+                                        </div>
+                                        <div class="health-bar">
+                                            <div class="health-fill network" style="width: 85%"></div>
+                                            <span class="health-value">85%</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Quick Actions -->
-                        <div class="card quick-actions">
-                            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
-                            <div class="action-buttons">
-                                <button class="btn btn-primary" onclick="switchTab('upload')">
-                                    <i class="fas fa-upload"></i> New Scan
-                                </button>
-                                <button class="btn btn-secondary" id="exportPdfBtn" onclick="generateReport()">
-                                    <i class="fas fa-file-pdf"></i> Export Report
-                                </button>
-                                <button class="btn btn-warning" id="clearDataBtn" onclick="clearAllData()">
-                                    <i class="fas fa-trash"></i> Clear Data
-                                </button>
+                        <!-- Actions and Visualization Row -->
+                        <div class="actions-viz-row">
+                            <!-- Quick Actions Panel -->
+                            <div class="quick-actions-panel">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                                </div>
+                                <div class="actions-grid">
+                                    <button class="action-btn primary" onclick="showTab('upload')">
+                                        <div class="action-icon">
+                                            <i class="fas fa-plus"></i>
+                                        </div>
+                                        <div class="action-content">
+                                            <div class="action-title">New Scan</div>
+                                            <div class="action-subtitle">Start analysis</div>
+                                        </div>
+                                    </button>
+                                    <button class="action-btn secondary" onclick="showTab('spectrum')">
+                                        <div class="action-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <div class="action-content">
+                                            <div class="action-title">View Spectrum</div>
+                                            <div class="action-subtitle">Analyze data</div>
+                                        </div>
+                                    </button>
+                                    <button class="action-btn success" id="exportReportBtn">
+                                        <div class="action-icon">
+                                            <i class="fas fa-file-export"></i>
+                                        </div>
+                                        <div class="action-content">
+                                            <div class="action-title">Export Report</div>
+                                            <div class="action-subtitle">Generate PDF</div>
+                                        </div>
+                                    </button>
+                                    <button class="action-btn warning" id="clearDataBtn">
+                                        <div class="action-icon">
+                                            <i class="fas fa-broom"></i>
+                                        </div>
+                                        <div class="action-content">
+                                            <div class="action-title">Clear Data</div>
+                                            <div class="action-subtitle">Reset system</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Real-time Visualization -->
+                            <div class="realtime-viz-panel">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-wave-square"></i> Live Monitoring</h3>
+                                    <div class="viz-controls">
+                                        <button class="btn-icon active" id="pauseVizBtn" title="Pause">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                        <button class="btn-icon" id="fullscreenVizBtn" title="Fullscreen">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="viz-container">
+                                    <canvas id="realtimeChart" width="400" height="200"></canvas>
+                                    <div class="viz-overlay">
+                                        <div class="viz-stats">
+                                            <div class="viz-stat">
+                                                <span class="viz-label">Peak:</span>
+                                                <span class="viz-value" id="peakValue">--</span>
+                                            </div>
+                                            <div class="viz-stat">
+                                                <span class="viz-label">Avg:</span>
+                                                <span class="viz-value" id="avgValue">--</span>
+                                            </div>
+                                            <div class="viz-stat">
+                                                <span class="viz-label">Rate:</span>
+                                                <span class="viz-value" id="rateValue">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity Feed -->
+                        <div class="activity-feed-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                                <div class="feed-controls">
+                                    <button class="btn-icon" id="refreshFeedBtn" title="Refresh">
+                                        <i class="fas fa-sync"></i>
+                                    </button>
+                                    <button class="btn-icon" id="clearFeedBtn" title="Clear">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="activity-feed" id="activityFeed">
+                                <div class="activity-item">
+                                    <div class="activity-time">12:34:56</div>
+                                    <div class="activity-icon success">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">System initialized successfully</div>
+                                        <div class="activity-subtitle">All modules loaded and ready</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-time">12:34:45</div>
+                                    <div class="activity-icon info">
+                                        <i class="fas fa-info"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">Quantum ML models loaded</div>
+                                        <div class="activity-subtitle">VQC and QSVC ready for analysis</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -170,25 +616,50 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <button class="btn btn-primary" id="generateBtn" onclick="generateSpectrum()">
+                                    <button class="btn btn-primary" id="generateBtn">
                                         <i class="fas fa-cogs"></i> Generate Spectrum
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Spectrum Display -->
+                        <!-- Enhanced Spectrum Display -->
                         <div class="card spectrum-card">
-                            <h3><i class="fas fa-chart-line"></i> Gamma-Ray Spectrum</h3>
+                            <h3><i class="fas fa-chart-line"></i> Advanced Gamma-Ray Spectrum Visualization</h3>
+                            
+                            <!-- Visualization Mode Selector -->
+                            <div class="visualization-controls">
+                                <div class="viz-mode-selector">
+                                    <button class="viz-btn active" data-mode="2d">2D Chart</button>
+                                    <button class="viz-btn" data-mode="3d">3D Surface</button>
+                                    <button class="viz-btn" data-mode="interactive">Interactive</button>
+                                    <button class="viz-btn" data-mode="heatmap">Heatmap</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Chart Containers -->
                             <div class="chart-container">
                                 <canvas id="spectrumChart"></canvas>
+                                <div id="spectrum3D" style="display: none; width: 100%; height: 400px;"></div>
+                                <div id="spectrumInteractive" style="display: none; width: 100%; height: 400px;"></div>
+                                <div id="spectrumHeatmap" style="display: none; width: 100%; height: 400px;"></div>
                             </div>
+                            
+                            <!-- Peak Analysis Panel -->
+                            <div class="peak-analysis-panel" id="peakAnalysisPanel" style="display: none;">
+                                <h4><i class="fas fa-mountain"></i> Peak Analysis</h4>
+                                <div id="peakDetails"></div>
+                            </div>
+                            
                             <div class="spectrum-controls">
-                                <button class="btn btn-success" id="runAnalysisBtn" onclick="runAnalysis()" disabled>
+                                <button class="btn btn-success" id="runAnalysisBtn" disabled>
                                     <i class="fas fa-play"></i> Run Analysis
                                 </button>
                                 <button class="btn btn-secondary" onclick="clearSpectrum()">
                                     <i class="fas fa-eraser"></i> Clear
+                                </button>
+                                <button class="btn btn-info" id="togglePeakAnalysis">
+                                    <i class="fas fa-search"></i> Peak Analysis
                                 </button>
                             </div>
                         </div>
@@ -198,61 +669,246 @@
                 <!-- Analysis Results Tab -->
                 <div class="tab-content" id="analysis">
                     <div class="analysis-section">
-                        <!-- Quantum Analysis Results -->
-                        <div class="model-results">
-                            <div class="card quantum-main-card">
-                                <h3><i class="fas fa-atom"></i> Quantum ML Analysis Results</h3>
-                                <div class="quantum-output" id="quantumResults">
-                                    <div class="quantum-grid">
-                                        <div class="quantum-result-section">
-                                            <h4><i class="fas fa-exclamation-triangle"></i> Threat Assessment</h4>
-                                            <div class="result-item">
-                                                <span class="label">Threat Level:</span>
-                                                <span class="value threat-level" id="quantumThreatLevel">--</span>
-                                            </div>
-                                            <div class="result-item">
-                                                <span class="label">Threat Probability:</span>
-                                                <span class="value" id="quantumThreat">--</span>
-                                            </div>
+                        <!-- Premium Analysis Results Header -->
+                        <div class="analysis-header">
+                            <h2><i class="fas fa-atom"></i> Quantum ML Analysis Results</h2>
+                            <div class="analysis-status" id="analysisStatus">
+                                <span class="status-indicator ready"></span>
+                                <span class="status-text">Ready for Analysis</span>
+                            </div>
+                        </div>
+
+                        <!-- Premium Grid Layout -->
+                        <div class="premium-results-grid">
+                            <!-- Main Threat Assessment Card -->
+                            <div class="result-card threat-card">
+                                <div class="card-header">
+                                    <div class="card-icon threat-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="card-title">
+                                        <h3>Threat Assessment</h3>
+                                        <p>Primary security evaluation</p>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="metric-display primary-metric">
+                                        <div class="metric-value threat-level" id="quantumThreatLevel">--</div>
+                                        <div class="metric-label">Threat Level</div>
+                                    </div>
+                                    <div class="metric-display secondary-metric">
+                                        <div class="metric-value" id="quantumThreat">--</div>
+                                        <div class="metric-label">Probability</div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" id="threatConfidenceBar"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Material Identification Card -->
+                            <div class="result-card material-card">
+                                <div class="card-header">
+                                    <div class="card-icon material-icon">
+                                        <i class="fas fa-atom"></i>
+                                    </div>
+                                    <div class="card-title">
+                                        <h3>Material Analysis</h3>
+                                        <p>Isotope identification</p>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="material-info">
+                                        <div class="isotope-display">
+                                            <div class="isotope-symbol" id="quantumIsotope">--</div>
+                                            <div class="isotope-name" id="quantumMaterialType">--</div>
                                         </div>
-                                        
-                                        <div class="quantum-result-section">
-                                            <h4><i class="fas fa-atom"></i> Material Identification</h4>
-                                            <div class="result-item">
-                                                <span class="label">Classified Isotope:</span>
-                                                <span class="value" id="quantumIsotope">--</span>
+                                        <div class="material-properties">
+                                            <div class="property-item">
+                                                <span class="property-label">Half-Life</span>
+                                                <span class="property-value" id="materialHalfLife">--</span>
                                             </div>
-                                            <div class="result-item">
-                                                <span class="label">Material Type:</span>
-                                                <span class="value" id="quantumMaterialType">--</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="quantum-result-section">
-                                            <h4><i class="fas fa-chart-line"></i> Quantum Metrics</h4>
-                                            <div class="result-item">
-                                                <span class="label">VQC Confidence:</span>
-                                                <span class="value" id="quantumVQCConfidence">--</span>
-                                            </div>
-                                            <div class="result-item">
-                                                <span class="label">QSVC Confidence:</span>
-                                                <span class="value" id="quantumQSVCConfidence">--</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="quantum-result-section">
-                                            <h4><i class="fas fa-cogs"></i> Analysis Details</h4>
-                                            <div class="result-item">
-                                                <span class="label">Processing Time:</span>
-                                                <span class="value" id="quantumProcessingTime">--</span>
-                                            </div>
-                                            <div class="result-item">
-                                                <span class="label">Model Agreement:</span>
-                                                <span class="value" id="quantumModelAgreement">--</span>
+                                            <div class="property-item">
+                                                <span class="property-label">Energy Peak</span>
+                                                <span class="property-value" id="materialEnergyPeak">--</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Quantum Metrics Card -->
+                            <div class="result-card quantum-card">
+                                <div class="card-header">
+                                    <div class="card-icon quantum-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="card-title">
+                                        <h3>Quantum Metrics</h3>
+                                        <p>ML model performance</p>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="quantum-metrics">
+                                        <div class="metric-circle">
+                                            <div class="circle-progress vqc-progress">
+                                                <div class="circle-fill"></div>
+                                                <div class="circle-content">
+                                                    <span class="circle-value" id="quantumVQCConfidence">--</span>
+                                                    <span class="circle-label">VQC</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="metric-circle">
+                                            <div class="circle-progress qsvc-progress">
+                                                <div class="circle-fill"></div>
+                                                <div class="circle-content">
+                                                    <span class="circle-value" id="quantumQSVCConfidence">--</span>
+                                                    <span class="circle-label">QSVC</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Analysis Performance Card -->
+                            <div class="result-card performance-card">
+                                <div class="card-header">
+                                    <div class="card-icon performance-icon">
+                                        <i class="fas fa-cogs"></i>
+                                    </div>
+                                    <div class="card-title">
+                                        <h3>Performance</h3>
+                                        <p>Analysis statistics</p>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="performance-stats">
+                                        <div class="stat-item">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="stat-info">
+                                                <div class="stat-value" id="quantumProcessingTime">--</div>
+                                                <div class="stat-label">Processing Time</div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                            <div class="stat-info">
+                                                <div class="stat-value" id="quantumModelAgreement">--</div>
+                                                <div class="stat-label">Model Agreement</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recommendations Card -->
+                            <div class="result-card recommendations-card">
+                                <div class="card-header">
+                                    <div class="card-icon recommendations-icon">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div class="card-title">
+                                        <h3>Recommendations</h3>
+                                        <p>Security protocols</p>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="recommendation-content" id="threatRecommendation">
+                                        <div class="recommendation-text">
+                                            Awaiting analysis results...
+                                        </div>
+                                        <div class="recommendation-actions">
+                                            <button class="btn btn-sm btn-primary" id="exportReportBtn">
+                                                <i class="fas fa-file-export"></i> Export Report
+                                            </button>
+                                            <button class="btn btn-sm btn-secondary" id="alertTeamBtn">
+                                                <i class="fas fa-bell"></i> Alert Team
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Analysis Timeline Card -->
+                            <div class="result-card timeline-card">
+                                <div class="card-header">
+                                    <div class="card-icon timeline-icon">
+                                        <i class="fas fa-history"></i>
+                                    </div>
+                                    <div class="card-title">
+                                        <h3>Analysis Timeline</h3>
+                                        <p>Processing stages</p>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="timeline-steps" id="analysisTimeline">
+                                        <div class="timeline-step completed">
+                                            <div class="step-icon"><i class="fas fa-upload"></i></div>
+                                            <div class="step-info">
+                                                <div class="step-title">Data Loaded</div>
+                                                <div class="step-time">--</div>
+                                            </div>
+                                        </div>
+                                        <div class="timeline-step">
+                                            <div class="step-icon"><i class="fas fa-brain"></i></div>
+                                            <div class="step-info">
+                                                <div class="step-title">ML Processing</div>
+                                                <div class="step-time">--</div>
+                                            </div>
+                                        </div>
+                                        <div class="timeline-step">
+                                            <div class="step-icon"><i class="fas fa-check"></i></div>
+                                            <div class="step-info">
+                                                <div class="step-title">Analysis Complete</div>
+                                                <div class="step-time">--</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Time-Series Analysis -->
+                        <div class="card time-series-card">
+                            <h3><i class="fas fa-chart-area"></i> Time-Series Analysis & Trends</h3>
+                            <div class="time-series-container">
+                                <div class="time-series-controls">
+                                    <select id="timeRangeSelect">
+                                        <option value="1h">Last Hour</option>
+                                        <option value="6h">Last 6 Hours</option>
+                                        <option value="24h" selected>Last 24 Hours</option>
+                                        <option value="7d">Last 7 Days</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-primary" id="refreshTimeSeriesBtn">
+                                        <i class="fas fa-sync"></i> Refresh
+                                    </button>
+                                </div>
+                                <div id="timeSeriesChart" style="width: 100%; height: 300px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Spatial Threat Heatmap -->
+                        <div class="card heatmap-card">
+                            <h3><i class="fas fa-map"></i> Spatial Threat Distribution</h3>
+                            <div class="heatmap-container">
+                                <div class="heatmap-controls">
+                                    <label>Threat Level Filter:</label>
+                                    <select id="threatLevelFilter">
+                                        <option value="all">All Levels</option>
+                                        <option value="high">High Only</option>
+                                        <option value="medium">Medium+</option>
+                                        <option value="low">Low+</option>
+                                    </select>
+                                </div>
+                                <div id="spatialHeatmap" style="width: 100%; height: 400px;"></div>
                             </div>
                         </div>
 
@@ -264,6 +920,217 @@
                                     <div class="progress-fill" id="progressFill"></div>
                                 </div>
                                 <div class="progress-text" id="progressText">Initializing...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Explanations Tab -->
+                <div class="tab-content" id="explanations">
+                    <div class="explanations-container">
+                        <!-- XAI Header -->
+                        <div class="xai-header">
+                            <div class="xai-title">
+                                <h1><i class="fas fa-brain"></i> AI Explanations & Interpretability</h1>
+                                <p>Understand how AI models make decisions in radiological threat detection</p>
+                            </div>
+                            <div class="xai-status">
+                                <div class="status-badge operational">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>XAI Ready</span>
+                                </div>
+                                <div class="last-explanation">Last updated: <span id="xaiLastUpdated">--:--:--</span></div>
+                            </div>
+                        </div>
+
+                        <!-- XAI Dashboard Grid -->
+                        <div class="xai-dashboard-grid">
+                            <!-- Model Decision Explanation -->
+                            <div class="xai-card model-decision-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-lightbulb"></i> Model Decision Breakdown</h3>
+                                    <button class="refresh-btn" onclick="refreshModelExplanation()">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                                <div class="decision-content">
+                                    <div class="decision-summary">
+                                        <div class="decision-result">
+                                            <div class="result-label">Current Prediction:</div>
+                                            <div class="result-value" id="currentPrediction">Low Risk</div>
+                                            <div class="confidence-score">Confidence: <span id="confidenceScore">87.3%</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="decision-factors">
+                                        <h4>Key Contributing Factors:</h4>
+                                        <div class="factor-list" id="decisionFactors">
+                                            <div class="factor-item positive">
+                                                <div class="factor-name">Peak at 662 keV (Cs-137)</div>
+                                                <div class="factor-impact">+0.45</div>
+                                                <div class="factor-bar"><div class="factor-fill positive" style="width: 75%"></div></div>
+                                            </div>
+                                            <div class="factor-item negative">
+                                                <div class="factor-name">Background Noise Level</div>
+                                                <div class="factor-impact">-0.12</div>
+                                                <div class="factor-bar"><div class="factor-fill negative" style="width: 20%"></div></div>
+                                            </div>
+                                            <div class="factor-item positive">
+                                                <div class="factor-name">Spectrum Clarity</div>
+                                                <div class="factor-impact">+0.28</div>
+                                                <div class="factor-bar"><div class="factor-fill positive" style="width: 47%"></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Feature Importance Visualization -->
+                            <div class="xai-card feature-importance-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-chart-bar"></i> Feature Importance (SHAP)</h3>
+                                    <div class="viz-controls">
+                                        <button class="viz-btn active" data-type="bar">Bar Chart</button>
+                                        <button class="viz-btn" data-type="waterfall">Waterfall</button>
+                                    </div>
+                                </div>
+                                <div class="feature-viz-container">
+                                    <canvas id="featureImportanceChart" width="400" height="300"></canvas>
+                                    <div class="feature-legend">
+                                        <div class="legend-item">
+                                            <div class="legend-color positive"></div>
+                                            <span>Increases Risk</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color negative"></div>
+                                            <span>Decreases Risk</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Spectrum Heatmap Explanation -->
+                            <div class="xai-card spectrum-heatmap-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-fire"></i> Spectrum Attention Map</h3>
+                                    <div class="heatmap-controls">
+                                        <label>Sensitivity: <input type="range" id="heatmapSensitivity" min="0.1" max="1" step="0.1" value="0.5"></label>
+                                    </div>
+                                </div>
+                                <div class="heatmap-container">
+                                    <canvas id="spectrumHeatmap" width="500" height="200"></canvas>
+                                    <div class="heatmap-info">
+                                        <div class="info-item">
+                                            <span class="info-label">Most Important Region:</span>
+                                            <span class="info-value" id="importantRegion">600-700 keV</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">Attention Score:</span>
+                                            <span class="info-value" id="attentionScore">0.82</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- LIME Local Explanation -->
+                            <div class="xai-card lime-explanation-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-search"></i> Local Explanation (LIME)</h3>
+                                    <button class="generate-btn" onclick="generateLimeExplanation()">
+                                        <i class="fas fa-play"></i> Generate
+                                    </button>
+                                </div>
+                                <div class="lime-content">
+                                    <div class="lime-summary">
+                                        <p>LIME explains this specific prediction by showing which features were most influential:</p>
+                                    </div>
+                                    <div class="lime-features" id="limeFeatures">
+                                        <div class="lime-feature">
+                                            <div class="feature-name">Energy Channel 662</div>
+                                            <div class="feature-weight positive">+0.34</div>
+                                            <div class="feature-description">Strong Cs-137 signature</div>
+                                        </div>
+                                        <div class="lime-feature">
+                                            <div class="feature-name">Energy Channel 1460</div>
+                                            <div class="feature-weight positive">+0.21</div>
+                                            <div class="feature-description">K-40 natural background</div>
+                                        </div>
+                                        <div class="lime-feature">
+                                            <div class="feature-name">Noise Level</div>
+                                            <div class="feature-weight negative">-0.15</div>
+                                            <div class="feature-description">High noise reduces confidence</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Counterfactual Analysis -->
+                            <div class="xai-card counterfactual-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-exchange-alt"></i> What-If Analysis</h3>
+                                    <div class="scenario-selector">
+                                        <select id="scenarioSelect">
+                                            <option value="remove_peak">Remove Main Peak</option>
+                                            <option value="increase_noise">Increase Noise</option>
+                                            <option value="change_exposure">Change Exposure Time</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="counterfactual-content">
+                                    <div class="scenario-comparison">
+                                        <div class="scenario-item current">
+                                            <h4>Current Scenario</h4>
+                                            <div class="scenario-result">Low Risk (87.3%)</div>
+                                            <div class="scenario-factors">
+                                                <div class="factor">Cs-137 Peak: Present</div>
+                                                <div class="factor">Noise Level: 2.1%</div>
+                                                <div class="factor">Exposure: 300s</div>
+                                            </div>
+                                        </div>
+                                        <div class="scenario-item alternative">
+                                            <h4>Alternative Scenario</h4>
+                                            <div class="scenario-result" id="alternativeResult">High Risk (92.1%)</div>
+                                            <div class="scenario-factors" id="alternativeFactors">
+                                                <div class="factor">Cs-137 Peak: Enhanced</div>
+                                                <div class="factor">Noise Level: 2.1%</div>
+                                                <div class="factor">Exposure: 300s</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Model Confidence & Uncertainty -->
+                            <div class="xai-card uncertainty-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-question-circle"></i> Model Uncertainty</h3>
+                                    <div class="uncertainty-type">
+                                        <button class="uncertainty-btn active" data-type="epistemic">Epistemic</button>
+                                        <button class="uncertainty-btn" data-type="aleatoric">Aleatoric</button>
+                                    </div>
+                                </div>
+                                <div class="uncertainty-content">
+                                    <div class="uncertainty-gauge">
+                                        <canvas id="uncertaintyGauge" width="200" height="200"></canvas>
+                                        <div class="gauge-info">
+                                            <div class="gauge-value" id="uncertaintyValue">12.7%</div>
+                                            <div class="gauge-label">Uncertainty</div>
+                                        </div>
+                                    </div>
+                                    <div class="uncertainty-breakdown">
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Model Uncertainty:</span>
+                                            <span class="breakdown-value">8.3%</span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Data Uncertainty:</span>
+                                            <span class="breakdown-value">4.4%</span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Confidence Interval:</span>
+                                            <span class="breakdown-value">±5.2%</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -350,9 +1217,9 @@
                 </div>
             </main>
         </div>
-    </div>
-
-    <script src="api.js"></script>
-    <script src="main.js"></script>
+                <script src="api.js"></script>
+                <script src="main.js"></script>
+                <script src="enhanced-visualization.js"></script>
+                <script src="notification-system.js"></script>
 </body>
 </html>

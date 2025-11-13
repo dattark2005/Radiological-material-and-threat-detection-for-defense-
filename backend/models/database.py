@@ -185,14 +185,22 @@ class MLResult:
             '_id': str(uuid.uuid4()),
             'analysis_session_id': analysis_session_id,
             'model_type': model_type,
-            'threat_probability': results['threat_probability'],
+            'threat_probability': results.get('threat_probability', 0.0),
             'classified_isotope': results.get('classified_isotope'),
             'confidence_level': results.get('confidence_level'),
             'material_quantity': results.get('material_quantity'),
             'detected_peaks': results.get('detected_peaks', []),
             'model_confidence': results.get('model_confidence'),
             'processing_time': results.get('processing_time'),
-            'created_at': datetime.utcnow()
+            'created_at': datetime.utcnow(),
+            # Additional quantum-specific fields
+            'threat_level': results.get('threat_level'),
+            'material_type': results.get('material_type'),
+            'vqc_confidence': results.get('vqc_confidence'),
+            'qsvc_confidence': results.get('qsvc_confidence'),
+            'model_agreement': results.get('model_agreement'),
+            'consensus_prediction': results.get('consensus_prediction'),
+            'quantum_details': results.get('quantum_details')
         }
         return mongo.db.ml_results.insert_one(result_data)
     
