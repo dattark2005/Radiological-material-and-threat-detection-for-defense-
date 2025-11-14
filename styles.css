@@ -4778,6 +4778,62 @@ input:checked + .slider:before {
     100% { background-position: 200px 0; }
 }
 
+/* XAI Real-time Update Animations */
+@keyframes xai-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+    }
+}
+
+.nav-item.new-results {
+    position: relative;
+    overflow: visible;
+}
+
+.nav-item.new-results::after {
+    content: '●';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: #4caf50;
+    font-size: 12px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* XAI Card Update Animation */
+.xai-card.updated {
+    animation: xai-update 0.6s ease-out;
+}
+
+@keyframes xai-update {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+}
+
 /* Responsive adjustments for quantum layout */
 @media (max-width: 768px) {
     .quantum-grid {

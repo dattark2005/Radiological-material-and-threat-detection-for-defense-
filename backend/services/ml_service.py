@@ -42,6 +42,11 @@ class ClassicalMLService:
             
             processing_time = time.time() - start_time
             
+            # Generate XAI explanations
+            xai_explanations = self._generate_xai_explanations(
+                spectrum_data, classified_isotope, detected_peaks, confidence
+            )
+            
             return {
                 'threat_probability': threat_probability,
                 'classified_isotope': classified_isotope,
@@ -49,7 +54,8 @@ class ClassicalMLService:
                 'material_quantity': material_quantity,
                 'detected_peaks': detected_peaks,
                 'model_confidence': confidence,
-                'processing_time': processing_time
+                'processing_time': processing_time,
+                'xai_explanations': xai_explanations
             }
             
         except Exception as e:
@@ -187,3 +193,136 @@ class ClassicalMLService:
             return 'Medium'
         else:
             return 'Small'
+    
+    def _generate_xai_explanations(self, spectrum_data, classified_isotope, detected_peaks, confidence):
+        """Generate explainable AI explanations for the analysis."""
+        try:
+            energy = np.array(spectrum_data['energy'])
+            counts = np.array(spectrum_data['counts'])
+            
+            # Calculate feature importance based on actual analysis
+            feature_importance = []
+            
+            # Peak-based features
+            for peak in detected_peaks[:5]:  # Top 5 peaks
+                importance_value = peak['significance'] * 0.001
+                feature_importance.append({
+                    'name': f"{peak['energy']:.1f} keV Peak",
+                    'value': importance_value,
+                    'positive': True,
+                    'description': f"Peak intensity: {peak['intensity']:.2f}, significance: {peak['significance']:.3f}"
+                })
+            
+            # Background noise feature
+            background_level = np.mean(counts[:100])  # First 100 channels as background
+            feature_importance.append({
+                'name': 'Background Noise Level',
+                'value': -background_level * 0.0001,
+                'positive': False,
+                'description': f"Background level: {background_level:.3f}"
+            })
+            
+            # Spectrum quality feature
+            max_count = np.max(counts)
+            avg_count = np.mean(counts)
+            snr = max_count / avg_count if avg_count > 0 else 0
+            feature_importance.append({
+                'name': 'Signal-to-Noise Ratio',
+                'value': min(snr * 0.00005, 0.001),
+                'positive': True,
+                'description': f"SNR: {snr:.2f}"
+            })
+            
+            # Count statistics feature
+            total_counts = np.sum(counts)
+            feature_importance.append({
+                'name': 'Count Statistics',
+                'value': min(total_counts / 1000000, 0.001),
+                'positive': True,
+                'description': f"Total counts: {total_counts:.0f}"
+            })
+            
+            # Calculate uncertainty
+            epistemic_uncertainty = max(5.0, (1.0 - confidence) * 20.0)
+            aleatoric_uncertainty = max(3.0, background_level * 10.0)
+            total_uncertainty = np.sqrt(epistemic_uncertainty**2 + aleatoric_uncertainty**2)
+            
+            # LIME-like local explanations
+            lime_explanations = []
+            if classified_isotope != 'Unknown':
+                signature_peaks = self.isotope_signatures.get(classified_isotope, {}).get('peaks', [])
+                for sig_peak in signature_peaks:
+                    # Find closest detected peak
+                    closest_peak = None
+                    min_diff = float('inf')
+                    for peak in detected_peaks:
+                        diff = abs(peak['energy'] - sig_peak)
+                        if diff < min_diff:
+                            min_diff = diff
+                            closest_peak = peak
+                    
+                    if closest_peak and min_diff < sig_peak * 0.05:  # Within 5% tolerance
+                        lime_explanations.append({
+                            'name': f'Energy Channel {sig_peak:.0f} keV',
+                            'weight': closest_peak['significance'] * 0.001,
+                            'desc': f"{classified_isotope} signature peak (intensity: {closest_peak['intensity']:.2f})",
+                            'positive': True
+                        })
+            
+            return {
+                'feature_importance': feature_importance,
+                'uncertainty': {
+                    'total': min(total_uncertainty, 50.0),
+                    'epistemic': min(epistemic_uncertainty, 30.0),
+                    'aleatoric': min(aleatoric_uncertainty, 25.0)
+                },
+                'lime_explanations': lime_explanations,
+                'model_prediction': {
+                    'threatLevel': self._get_threat_level(classified_isotope),
+                    'confidence': confidence * 100,
+                    'isotope': classified_isotope,
+                    'activity': self._estimate_activity_level(detected_peaks)
+                }
+            }
+            
+        except Exception as e:
+            logging.error(f"XAI explanation generation error: {str(e)}")
+            return {
+                'feature_importance': [],
+                'uncertainty': {'total': 15.0, 'epistemic': 10.0, 'aleatoric': 5.0},
+                'lime_explanations': [],
+                'model_prediction': {
+                    'threatLevel': 'Unknown',
+                    'confidence': 0.0,
+                    'isotope': 'Unknown',
+                    'activity': 'Unknown'
+                }
+            }
+    
+    def _get_threat_level(self, isotope):
+        """Convert isotope to threat level."""
+        if isotope == 'Unknown':
+            return 'Low Risk'
+        
+        threat_prob = self.isotope_signatures.get(isotope, {}).get('threat_level', 0.1)
+        if threat_prob >= 0.9:
+            return 'Very High Risk'
+        elif threat_prob >= 0.7:
+            return 'High Risk'
+        elif threat_prob >= 0.4:
+            return 'Medium Risk'
+        else:
+            return 'Low Risk'
+    
+    def _estimate_activity_level(self, detected_peaks):
+        """Estimate activity level based on peak characteristics."""
+        if not detected_peaks:
+            return 'Low'
+        
+        max_significance = max(peak['significance'] for peak in detected_peaks)
+        if max_significance > 0.5:
+            return 'High'
+        elif max_significance > 0.2:
+            return 'Medium'
+        else:
+            return 'Low'

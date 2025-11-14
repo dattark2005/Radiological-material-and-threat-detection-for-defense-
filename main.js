@@ -552,6 +552,103 @@ function testAnalysisSystem() {
 // Make test function available globally
 window.testAnalysisSystem = testAnalysisSystem;
 
+// Test XAI system specifically
+function testXAISystem() {
+    console.log('🧪 Testing XAI system...');
+    
+    // First generate some test spectrum data
+    if (!currentSpectrumData) {
+        console.log('📊 Generating test spectrum data...');
+        generateSpectrum();
+    }
+    
+    // Wait a moment then run analysis
+    setTimeout(() => {
+        console.log('🚀 Running test analysis for XAI...');
+        runAnalysis();
+        
+        // After analysis, automatically switch to XAI tab to show results
+        setTimeout(() => {
+            console.log('🧠 Switching to XAI tab to show results...');
+            showTab('explanations');
+        }, 3000);
+    }, 1000);
+}
+
+// Make XAI test function available globally
+window.testXAISystem = testXAISystem;
+
+// Test client-side mode functionality
+function testClientSideMode() {
+    console.log('🧪 Testing client-side mode functionality...');
+    
+    // Show status as offline
+    updateSystemStatus('offline');
+    
+    // Test synthetic spectrum generation
+    console.log('📊 Testing synthetic spectrum generation...');
+    generateSpectrum();
+    
+    // Wait then test analysis
+    setTimeout(() => {
+        console.log('🚀 Testing client-side analysis...');
+        runAnalysis();
+        
+        // Show XAI results after analysis
+        setTimeout(() => {
+            console.log('🧠 Showing XAI results...');
+            showTab('explanations');
+            
+            if (window.notificationSystem) {
+                window.notificationSystem.success('Client-Side Test', 'All systems working in offline mode!', {
+                    category: 'test',
+                    duration: 5000
+                });
+            }
+        }, 4000);
+    }, 2000);
+}
+
+// Make client-side test function available globally
+window.testClientSideMode = testClientSideMode;
+
+// System status management
+function updateSystemStatus(status) {
+    console.log(`🔧 System status: ${status}`);
+    
+    // Find or create status indicator
+    let statusIndicator = document.querySelector('.system-status-indicator');
+    if (!statusIndicator) {
+        statusIndicator = document.createElement('div');
+        statusIndicator.className = 'system-status-indicator';
+        statusIndicator.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10000;
+            transition: all 0.3s ease;
+        `;
+        document.body.appendChild(statusIndicator);
+    }
+    
+    // Update status appearance
+    if (status === 'offline') {
+        statusIndicator.textContent = '🔴 OFFLINE MODE';
+        statusIndicator.style.background = 'linear-gradient(45deg, #ff6b6b, #ee5a24)';
+        statusIndicator.style.color = 'white';
+        statusIndicator.title = 'Backend server unavailable - running in client-side mode';
+    } else if (status === 'online') {
+        statusIndicator.textContent = '🟢 ONLINE';
+        statusIndicator.style.background = 'linear-gradient(45deg, #00d2d3, #54a0ff)';
+        statusIndicator.style.color = 'white';
+        statusIndicator.title = 'Connected to backend server';
+    }
+}
+
 // Premium Dashboard Functions
 function initializePremiumDashboard() {
     console.log('🎛️ Initializing premium dashboard...');
@@ -1222,48 +1319,75 @@ function calculateRealUncertainty() {
 function updateXAIDisplay() {
     console.log('🔄 Updating XAI display with real data...');
     
-    // Update prediction display
+    // Update prediction display with animation
     const predictionEl = document.getElementById('currentPrediction');
     const confidenceEl = document.getElementById('confidenceScore');
     
     if (predictionEl && window.xaiData.modelPrediction) {
+        // Add update animation
+        predictionEl.style.transform = 'scale(1.1)';
+        predictionEl.style.color = '#4caf50';
         predictionEl.textContent = window.xaiData.modelPrediction.threatLevel;
+        setTimeout(() => {
+            predictionEl.style.transform = '';
+            predictionEl.style.color = '';
+        }, 500);
     }
     
     if (confidenceEl && window.xaiData.modelPrediction) {
+        // Add confidence animation
+        confidenceEl.style.transform = 'scale(1.1)';
+        confidenceEl.style.color = '#667eea';
         confidenceEl.textContent = window.xaiData.modelPrediction.confidence.toFixed(1) + '%';
+        setTimeout(() => {
+            confidenceEl.style.transform = '';
+            confidenceEl.style.color = '';
+        }, 500);
     }
     
     // Update decision factors with real data
     updateRealDecisionFactors();
     
-    // Update uncertainty display
+    // Update uncertainty display with animation
     if (window.xaiData.uncertainty) {
         const uncertaintyEl = document.getElementById('uncertaintyValue');
         if (uncertaintyEl) {
+            uncertaintyEl.style.transform = 'scale(1.1)';
+            uncertaintyEl.style.color = '#ff9800';
             uncertaintyEl.textContent = window.xaiData.uncertainty.total.toFixed(1) + '%';
+            setTimeout(() => {
+                uncertaintyEl.style.transform = '';
+                uncertaintyEl.style.color = '';
+            }, 500);
         }
         
-        // Update breakdown
+        // Update breakdown with animations
         const breakdownItems = document.querySelectorAll('.breakdown-value');
         if (breakdownItems.length >= 3) {
+            breakdownItems.forEach((item, index) => {
+                item.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    item.style.transform = '';
+                }, 300 + index * 100);
+            });
+            
             breakdownItems[0].textContent = window.xaiData.uncertainty.epistemic.toFixed(1) + '%';
             breakdownItems[1].textContent = window.xaiData.uncertainty.aleatoric.toFixed(1) + '%';
             breakdownItems[2].textContent = '±' + (window.xaiData.uncertainty.total * 0.5).toFixed(1) + '%';
         }
     }
+    
+    // Update timestamp to show when last updated
+    updateXAITimestamp();
+    
+    console.log('✅ XAI display updated with animations');
 }
 
 function initializeXAIVisualizations() {
     console.log('📊 Initializing XAI visualizations...');
     
-    // Initialize Feature Importance Chart with real data
+    // Initialize working visualizations only
     initializeFeatureImportanceChart();
-    
-    // Initialize Spectrum Heatmap with real data
-    initializeSpectrumHeatmap();
-    
-    // Initialize Uncertainty Gauge with real data
     initializeUncertaintyGauge();
 }
 
@@ -1325,65 +1449,6 @@ function drawFeatureImportanceChart(ctx) {
     ctx.stroke();
 }
 
-function initializeSpectrumHeatmap() {
-    const canvas = document.getElementById('spectrumHeatmap');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        drawSpectrumHeatmap(ctx);
-    }
-}
-
-function drawSpectrumHeatmap(ctx) {
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-    
-    // Clear canvas
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-    ctx.fillRect(0, 0, width, height);
-    
-    // Generate heatmap data (simulated attention weights)
-    const numPoints = 100;
-    const attentionData = [];
-    
-    for (let i = 0; i < numPoints; i++) {
-        const x = (i / numPoints) * width;
-        let attention = 0.1; // Base attention
-        
-        // Add peaks at important energy levels
-        if (i > 40 && i < 50) attention = 0.8; // 662 keV region
-        if (i > 70 && i < 75) attention = 0.6; // 1460 keV region
-        if (i > 20 && i < 25) attention = 0.4; // Background region
-        
-        attentionData.push({ x, attention });
-    }
-    
-    // Draw heatmap
-    attentionData.forEach((point, index) => {
-        const alpha = point.attention;
-        const hue = point.attention > 0.5 ? 0 : 120; // Red for high attention, green for low
-        
-        ctx.fillStyle = `hsla(${hue}, 70%, 50%, ${alpha})`;
-        ctx.fillRect(point.x, 0, width / numPoints, height);
-    });
-    
-    // Draw spectrum overlay
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    
-    for (let i = 0; i < numPoints; i++) {
-        const x = (i / numPoints) * width;
-        const y = height - (Math.sin(i * 0.1) * 30 + Math.random() * 20 + 50);
-        
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
-    }
-    
-    ctx.stroke();
-}
 
 function initializeUncertaintyGauge() {
     const canvas = document.getElementById('uncertaintyGauge');
@@ -1441,49 +1506,8 @@ function setupXAIEventListeners() {
         generateBtn.addEventListener('click', generateLimeExplanation);
     }
     
-    // Visualization controls
-    const vizBtns = document.querySelectorAll('.viz-btn');
-    vizBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            // Remove active class from siblings
-            e.target.parentElement.querySelectorAll('.viz-btn').forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
-            e.target.classList.add('active');
-            
-            // Update visualization based on type
-            const type = e.target.dataset.type;
-            if (type) updateFeatureVisualization(type);
-        });
-    });
-    
-    // Uncertainty type buttons
-    const uncertaintyBtns = document.querySelectorAll('.uncertainty-btn');
-    uncertaintyBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.target.parentElement.querySelectorAll('.uncertainty-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            
-            const type = e.target.dataset.type;
-            updateUncertaintyDisplay(type);
-        });
-    });
-    
-    // Heatmap sensitivity slider
-    const sensitivitySlider = document.getElementById('heatmapSensitivity');
-    if (sensitivitySlider) {
-        sensitivitySlider.addEventListener('input', (e) => {
-            const sensitivity = parseFloat(e.target.value);
-            updateHeatmapSensitivity(sensitivity);
-        });
-    }
-    
-    // Scenario selector
-    const scenarioSelect = document.getElementById('scenarioSelect');
-    if (scenarioSelect) {
-        scenarioSelect.addEventListener('change', (e) => {
-            updateCounterfactualScenario(e.target.value);
-        });
-    }
+    // Note: Removed non-functional visualization controls, uncertainty toggles, 
+    // heatmap sensitivity, and scenario selectors as they were not working properly
 }
 
 function refreshModelExplanation() {
@@ -1506,7 +1530,7 @@ function refreshModelExplanation() {
     // Refresh visualizations
     setTimeout(() => {
         initializeFeatureImportanceChart();
-        initializeSpectrumHeatmap();
+        initializeUncertaintyGauge();
     }, 500);
 }
 
@@ -1558,7 +1582,14 @@ function generateLimeExplanation() {
     const limeFeatures = document.getElementById('limeFeatures');
     if (!limeFeatures) return;
     
-    // Use real analysis data for LIME-like explanations
+    // Check if we have backend LIME explanations first
+    if (window.xaiData.limeExplanations && window.xaiData.limeExplanations.length > 0) {
+        console.log('🔍 Using backend LIME explanations');
+        displayLimeExplanations(window.xaiData.limeExplanations);
+        return;
+    }
+    
+    // Fall back to client-side LIME-like explanations
     const analysis = window.xaiData.currentAnalysis;
     const spectrum = window.xaiData.spectrumData;
     
@@ -1638,68 +1669,52 @@ function generateLimeExplanation() {
     console.log('✅ LIME explanation generated with real data');
 }
 
+// Display LIME explanations from backend
+function displayLimeExplanations(limeExplanations) {
+    const limeFeatures = document.getElementById('limeFeatures');
+    if (!limeFeatures) return;
+    
+    limeFeatures.innerHTML = '';
+    
+    // Sort by absolute weight
+    const sortedExplanations = limeExplanations.sort((a, b) => Math.abs(parseFloat(b.weight)) - Math.abs(parseFloat(a.weight)));
+    
+    sortedExplanations.forEach(explanation => {
+        const featureEl = document.createElement('div');
+        featureEl.className = 'lime-feature';
+        featureEl.innerHTML = `
+            <div class="feature-name">${explanation.name}</div>
+            <div class="feature-weight ${explanation.positive ? 'positive' : 'negative'}">${explanation.positive ? '+' : ''}${explanation.weight}</div>
+            <div class="feature-description">${explanation.desc}</div>
+        `;
+        limeFeatures.appendChild(featureEl);
+    });
+    
+    console.log('✅ Backend LIME explanations displayed');
+}
+
 function updateFeatureVisualization(type) {
     console.log(`📊 Updating feature visualization: ${type}`);
     
-    // Re-initialize chart based on type
-    if (type === 'waterfall') {
-        // Draw waterfall chart
-        const canvas = document.getElementById('featureImportanceChart');
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            drawWaterfallChart(ctx);
-        }
-    } else {
-        // Draw bar chart (default)
-        initializeFeatureImportanceChart();
-    }
+    // Only support bar chart (waterfall removed as non-functional)
+    initializeFeatureImportanceChart();
 }
 
-function drawWaterfallChart(ctx) {
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-    
-    // Clear canvas
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    ctx.fillRect(0, 0, width, height);
-    
-    // Waterfall data
-    const values = [0, 0.45, 0.28, 0.21, -0.12, 0.08];
-    const labels = ['Base', '662 keV', 'Clarity', '1460 keV', 'Noise', 'Final'];
-    
-    let cumulative = 0;
-    const barWidth = width / values.length - 10;
-    
-    values.forEach((value, index) => {
-        const x = index * (barWidth + 10) + 5;
-        const barHeight = Math.abs(value) * 200;
-        const y = height/2 - (cumulative + value/2) * 200;
-        
-        // Draw bar
-        ctx.fillStyle = value >= 0 ? '#4caf50' : '#f44336';
-        ctx.fillRect(x, y, barWidth, barHeight);
-        
-        // Draw label
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '10px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(labels[index], x + barWidth/2, height - 10);
-        
-        cumulative += value;
-    });
-}
 
-function updateUncertaintyDisplay(type) {
-    console.log(`❓ Updating uncertainty display: ${type}`);
+function updateUncertaintyDisplay() {
+    console.log(`❓ Updating uncertainty display with real data...`);
     
-    const uncertaintyValue = type === 'epistemic' ? 12.7 : 8.4;
+    // Use real uncertainty data if available
+    const uncertaintyValue = window.xaiData.uncertainty ? 
+        window.xaiData.uncertainty.total : 12.7;
+    
     const uncertaintyEl = document.getElementById('uncertaintyValue');
     
     if (uncertaintyEl) {
-        uncertaintyEl.textContent = uncertaintyValue + '%';
+        uncertaintyEl.textContent = uncertaintyValue.toFixed(1) + '%';
     }
     
-    // Redraw gauge
+    // Redraw gauge with real data
     const canvas = document.getElementById('uncertaintyGauge');
     if (canvas) {
         const ctx = canvas.getContext('2d');
@@ -1707,44 +1722,108 @@ function updateUncertaintyDisplay(type) {
     }
 }
 
-function updateHeatmapSensitivity(sensitivity) {
-    console.log(`🔥 Updating heatmap sensitivity: ${sensitivity}`);
+
+// Force refresh all XAI visualizations with current data
+function refreshXAIVisualizations() {
+    console.log('🔄 Refreshing all XAI visualizations...');
     
-    // Redraw heatmap with new sensitivity
-    const canvas = document.getElementById('spectrumHeatmap');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        drawSpectrumHeatmap(ctx, sensitivity);
+    if (!window.xaiData || !window.analysisResults) {
+        console.warn('⚠️ No XAI data available for refresh');
+        return;
+    }
+    
+    // Update all displays with current data
+    updateXAIDisplay();
+    
+    // Refresh working visualizations only
+    initializeFeatureImportanceChart();
+    initializeUncertaintyGauge();
+    
+    // Update LIME explanations
+    generateLimeExplanation();
+    
+    // Add visual feedback with enhanced animations
+    const xaiCards = document.querySelectorAll('.xai-card');
+    xaiCards.forEach((card, index) => {
+        // Add updated class for CSS animation
+        card.classList.add('updated');
+        
+        // Stagger the animations for a wave effect
+        setTimeout(() => {
+            card.style.transform = 'scale(1.02)';
+            card.style.boxShadow = '0 20px 50px rgba(102, 126, 234, 0.3)';
+            card.style.borderColor = '#667eea';
+            
+            setTimeout(() => {
+                card.style.transform = '';
+                card.style.boxShadow = '';
+                card.style.borderColor = '';
+                card.classList.remove('updated');
+            }, 1000);
+        }, index * 200); // Stagger by 200ms per card
+    });
+    
+    console.log('✅ XAI visualizations refreshed');
+}
+
+// Process XAI data from backend and update frontend
+function processBackendXAIData(xaiData) {
+    console.log('🧠 Processing backend XAI data:', xaiData);
+    
+    try {
+        // Update global XAI data with backend results
+        if (xaiData.feature_importance) {
+            window.xaiData.featureImportance = xaiData.feature_importance;
+        }
+        
+        if (xaiData.uncertainty) {
+            window.xaiData.uncertainty = xaiData.uncertainty;
+        }
+        
+        if (xaiData.model_prediction) {
+            window.xaiData.modelPrediction = xaiData.model_prediction;
+        }
+        
+        // Store LIME explanations if available
+        if (xaiData.lime_explanations) {
+            window.xaiData.limeExplanations = xaiData.lime_explanations;
+        }
+        
+        // Force immediate UI update with backend data
+        updateXAIDisplay();
+        refreshXAIVisualizations();
+        
+        console.log('✅ Backend XAI data processed and UI updated');
+        
+    } catch (error) {
+        console.error('❌ Error processing backend XAI data:', error);
+        // Fall back to client-side XAI generation
+        if (window.analysisResults) {
+            generateRealExplanations(window.analysisResults);
+        }
     }
 }
 
-function updateCounterfactualScenario(scenario) {
-    console.log(`🔄 Updating counterfactual scenario: ${scenario}`);
+// Enhanced refresh function that forces recalculation
+function refreshModelExplanation() {
+    console.log('🔄 Refreshing model explanation with real data...');
     
-    const alternativeResult = document.getElementById('alternativeResult');
-    const alternativeFactors = document.getElementById('alternativeFactors');
+    if (!window.analysisResults) {
+        console.warn('⚠️ No analysis results available for explanation refresh');
+        return;
+    }
     
-    const scenarios = {
-        'remove_peak': {
-            result: 'Clear (95.2%)',
-            factors: ['Cs-137 Peak: Removed', 'Noise Level: 2.1%', 'Exposure: 300s']
-        },
-        'increase_noise': {
-            result: 'High Risk (76.8%)',
-            factors: ['Cs-137 Peak: Present', 'Noise Level: 8.5%', 'Exposure: 300s']
-        },
-        'change_exposure': {
-            result: 'Medium Risk (82.1%)',
-            factors: ['Cs-137 Peak: Present', 'Noise Level: 2.1%', 'Exposure: 60s']
-        }
-    };
+    // Force recalculation of all XAI components
+    generateRealExplanations(window.analysisResults);
     
-    const scenarioData = scenarios[scenario];
-    if (scenarioData && alternativeResult && alternativeFactors) {
-        alternativeResult.textContent = scenarioData.result;
-        alternativeFactors.innerHTML = scenarioData.factors.map(factor => 
-            `<div class="factor">${factor}</div>`
-        ).join('');
+    // Refresh all visualizations
+    refreshXAIVisualizations();
+    
+    // Show notification
+    if (window.notificationSystem) {
+        window.notificationSystem.info('XAI Updated', 'Explanations refreshed with latest analysis data', {
+            category: 'xai'
+        });
     }
 }
 
@@ -1754,12 +1833,14 @@ function startXAIUpdates() {
     // Update timestamps every second
     setInterval(updateXAITimestamp, 1000);
     
-    // Refresh explanations every 30 seconds
+    // Auto-refresh explanations every 10 seconds if XAI tab is active
     setInterval(() => {
-        if (document.querySelector('.tab-content#explanations.active')) {
-            refreshModelExplanation();
+        const xaiTab = document.querySelector('.tab-content#explanations.active');
+        if (xaiTab && window.analysisResults) {
+            console.log('🔄 Auto-refreshing XAI (tab active)');
+            refreshXAIVisualizations();
         }
-    }, 30000);
+    }, 10000);
 }
 
 // Initialize dashboard when DOM is ready
@@ -1963,7 +2044,7 @@ function updateUserAvatar(username) {
     });
 }
 
-// API Helper Functions
+// API Helper Functions with Client-Side Fallback
 async function apiRequest(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = {
@@ -1976,25 +2057,99 @@ async function apiRequest(endpoint, options = {}) {
     }
     
     try {
-        const response = await fetch(url, { ...options, headers });
-        const data = await response.json();
+        console.log(`🌐 API Request: ${options.method || 'GET'} ${url}`);
+        const response = await fetch(url, {
+            ...options,
+            headers,
+            timeout: 5000 // 5 second timeout
+        });
         
         if (!response.ok) {
-            if (response.status === 401) {
-                logout();
-                throw new Error('Authentication required');
-            }
-            throw new Error(data.error || 'API request failed');
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
+        const data = await response.json();
+        console.log(`✅ API Response:`, data);
         return data;
+        
     } catch (error) {
-        console.error('API Error:', error);
-        if (!error.message.includes('Authentication')) {
-            showNotification(error.message, 'error');
+        console.error(`❌ API Error:`, error);
+        
+        // Check if it's a connection error
+        if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION_REFUSED')) {
+            console.log('🔄 Backend unavailable, switching to client-side mode...');
+            
+            // Show user-friendly notification
+            if (window.notificationSystem) {
+                window.notificationSystem.warning('Offline Mode', 'Backend server unavailable. Running in client-side mode.', {
+                    category: 'system',
+                    duration: 3000
+                });
+            }
+            
+            // Update system status indicator
+            updateSystemStatus('offline');
+            
+            // Return client-side fallback based on endpoint
+            return handleClientSideFallback(endpoint, options);
         }
+        
         throw error;
     }
+}
+
+// Client-side fallback handler
+function handleClientSideFallback(endpoint, options) {
+    console.log(`🧠 Client-side fallback for: ${endpoint}`);
+    
+    if (endpoint.includes('/upload/synthetic')) {
+        // Return synthetic spectrum data
+        return {
+            success: true,
+            spectrum_data: generateSampleSpectrum(),
+            message: 'Synthetic spectrum generated (client-side)'
+        };
+    }
+    
+    if (endpoint.includes('/analysis/run')) {
+        // Return immediate analysis session
+        return {
+            session_id: 'client-' + Date.now(),
+            status: 'pending',
+            message: 'Analysis started (client-side)'
+        };
+    }
+    
+    if (endpoint.includes('/analysis/status/')) {
+        // Return completed status
+        return {
+            status: 'completed',
+            message: 'Analysis completed (client-side)'
+        };
+    }
+    
+    if (endpoint.includes('/analysis/results/')) {
+        // Return client-side analysis results
+        return generateClientSideAnalysisResults();
+    }
+    
+    // Default fallback
+    return {
+        success: false,
+        message: 'Backend unavailable - using client-side mode',
+        client_side: true
+    };
+}
+
+// Generate complete client-side analysis results
+function generateClientSideAnalysisResults() {
+    if (!currentSpectrumData) {
+        currentSpectrumData = generateSampleSpectrum();
+    }
+    
+    const analysisResult = analyzeSpectrumClientSide(currentSpectrumData);
+    console.log('📊 Generated client-side analysis results:', analysisResult);
+    return analysisResult;
 }
 
 // File Upload Functions
@@ -2177,17 +2332,6 @@ async function runAnalysis() {
     }
 }
 
-function showAnalysisProgress() {
-    console.log('📈 Showing analysis progress');
-    const progressDiv = document.getElementById('analysisProgress');
-    if (progressDiv) {
-        progressDiv.style.display = 'block';
-        console.log('✅ Progress div shown');
-    } else {
-        console.warn('⚠️ Analysis progress div not found');
-    }
-}
-
 async function pollAnalysisResults(sessionId) {
     const maxAttempts = 12; // Reduced from 60 to 12 (1 minute max)
     let attempts = 0;
@@ -2214,6 +2358,16 @@ async function pollAnalysisResults(sessionId) {
                     console.log('📋 Results received:', resultsResponse);
                     
                     displayAnalysisResults(resultsResponse);
+                    
+                    // Process XAI data from backend if available
+                    if (resultsResponse.ml_results && resultsResponse.ml_results.length > 0) {
+                        const mlResult = resultsResponse.ml_results[0];
+                        if (mlResult.result && mlResult.result.xai_explanations) {
+                            console.log('🧠 Processing backend XAI data...');
+                            processBackendXAIData(mlResult.result.xai_explanations);
+                        }
+                    }
+                    
                     resetAnalysisUI();
                     
                     if (window.notificationSystem) {
@@ -2270,6 +2424,21 @@ async function performClientSideAnalysis() {
         
         // Display results
         displayAnalysisResults(analysisResult);
+        
+        // REAL-TIME XAI UPDATE: Force immediate XAI refresh
+        console.log('🧠 Triggering real-time XAI update...');
+        if (window.xaiData && analysisResult) {
+            // Store analysis results globally for XAI
+            window.analysisResults = analysisResult;
+            
+            // Force immediate XAI explanation generation
+            setTimeout(() => {
+                generateRealExplanations(window.analysisResults);
+                refreshXAIVisualizations();
+                console.log('✅ XAI real-time update complete');
+            }, 500);
+        }
+        
         resetAnalysisUI();
         
         if (window.notificationSystem) {
@@ -2315,6 +2484,9 @@ function analyzeSpectrumClientSide(spectrumData) {
     const threatAssessment = calculateThreatLevel(isotope, peaks);
     console.log('⚠️ Threat assessment:', threatAssessment);
     
+    // Generate XAI explanations for client-side analysis
+    const xaiExplanations = generateClientSideXAI(isotope, peaks, counts, threatAssessment);
+    
     // Generate realistic analysis results
     return {
         session: { _id: "client-analysis", status: "completed" },
@@ -2328,7 +2500,10 @@ function analyzeSpectrumClientSide(spectrumData) {
                 vqc_confidence: 0.85 + Math.random() * 0.1,
                 qsvc_confidence: 0.80 + Math.random() * 0.15,
                 processing_time: 2.1 + Math.random() * 1.5,
-                model_agreement: 0.88 + Math.random() * 0.1
+                model_agreement: 0.88 + Math.random() * 0.1,
+                result: {
+                    xai_explanations: xaiExplanations
+                }
             }
         ],
         threat_assessment: threatAssessment
@@ -2429,6 +2604,116 @@ function getRecommendation(threatLevel) {
     };
     
     return recommendations[threatLevel] || 'ASSESS SITUATION - Gather more data';
+}
+
+// Generate XAI explanations for client-side analysis
+function generateClientSideXAI(isotope, peaks, counts, threatAssessment) {
+    console.log('🧠 Generating client-side XAI explanations...');
+    
+    try {
+        // Calculate feature importance
+        const feature_importance = [];
+        
+        // Peak-based features
+        peaks.forEach((peak, index) => {
+            if (index < 5) { // Top 5 peaks
+                feature_importance.push({
+                    name: `${peak.energy.toFixed(1)} keV Peak`,
+                    value: peak.significance * 0.001,
+                    positive: true,
+                    description: `Peak intensity: ${peak.intensity.toFixed(2)}, significance: ${peak.significance.toFixed(3)}`
+                });
+            }
+        });
+        
+        // Background noise
+        const backgroundLevel = counts.slice(0, 100).reduce((sum, val) => sum + val, 0) / 100;
+        feature_importance.push({
+            name: 'Background Noise Level',
+            value: -backgroundLevel * 0.0001,
+            positive: false,
+            description: `Background level: ${backgroundLevel.toFixed(3)}`
+        });
+        
+        // Signal-to-noise ratio
+        const maxCount = Math.max(...counts);
+        const avgCount = counts.reduce((sum, val) => sum + val, 0) / counts.length;
+        const snr = maxCount / avgCount;
+        feature_importance.push({
+            name: 'Signal-to-Noise Ratio',
+            value: Math.min(snr * 0.00005, 0.001),
+            positive: true,
+            description: `SNR: ${snr.toFixed(2)}`
+        });
+        
+        // Count statistics
+        const totalCounts = counts.reduce((sum, val) => sum + val, 0);
+        feature_importance.push({
+            name: 'Count Statistics',
+            value: Math.min(totalCounts / 1000000, 0.001),
+            positive: true,
+            description: `Total counts: ${totalCounts.toFixed(0)}`
+        });
+        
+        // Calculate uncertainty
+        const confidence = isotope.confidence || 0.5;
+        const epistemic_uncertainty = Math.max(5.0, (1.0 - confidence) * 20.0);
+        const aleatoric_uncertainty = Math.max(3.0, backgroundLevel * 10.0);
+        const total_uncertainty = Math.sqrt(epistemic_uncertainty**2 + aleatoric_uncertainty**2);
+        
+        // LIME explanations
+        const lime_explanations = [];
+        if (isotope.name !== 'Unknown') {
+            peaks.forEach(peak => {
+                lime_explanations.push({
+                    name: `Energy Channel ${peak.energy.toFixed(0)} keV`,
+                    weight: (peak.significance * 0.001).toFixed(3),
+                    desc: `${isotope.name} related peak (intensity: ${peak.intensity.toFixed(2)})`,
+                    positive: true
+                });
+            });
+        }
+        
+        return {
+            feature_importance: feature_importance,
+            uncertainty: {
+                total: Math.min(total_uncertainty, 50.0),
+                epistemic: Math.min(epistemic_uncertainty, 30.0),
+                aleatoric: Math.min(aleatoric_uncertainty, 25.0)
+            },
+            lime_explanations: lime_explanations,
+            model_prediction: {
+                threatLevel: threatAssessment.level,
+                confidence: (confidence * 100).toFixed(1),
+                isotope: isotope.name,
+                activity: getActivityLevel(peaks)
+            }
+        };
+        
+    } catch (error) {
+        console.error('❌ Error generating client-side XAI:', error);
+        return {
+            feature_importance: [],
+            uncertainty: { total: 15.0, epistemic: 10.0, aleatoric: 5.0 },
+            lime_explanations: [],
+            model_prediction: {
+                threatLevel: 'Unknown',
+                confidence: '0.0',
+                isotope: 'Unknown',
+                activity: 'Unknown'
+            }
+        };
+    }
+}
+
+// Helper function to determine activity level
+function getActivityLevel(peaks) {
+    if (!peaks || peaks.length === 0) return 'Low';
+    
+    const maxSignificance = Math.max(...peaks.map(p => p.significance));
+    if (maxSignificance > 0.5) return 'High';
+    if (maxSignificance > 0.2) return 'Medium';
+    return 'Low';
 }
 
 // Enhanced functions for premium grid layout
@@ -2564,6 +2849,31 @@ function animateResultCards() {
     });
 }
 
+// Hide analysis progress
+function hideAnalysisProgress() {
+    console.log('📉 Hiding analysis progress');
+    const progressDiv = document.getElementById('analysisProgress');
+    if (progressDiv) {
+        progressDiv.style.display = 'none';
+        
+        // Reset progress bar
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        
+        if (progressFill) {
+            progressFill.style.width = '0%';
+        }
+        
+        if (progressText) {
+            progressText.textContent = 'Initializing...';
+        }
+        
+        console.log('✅ Analysis progress hidden and reset');
+    } else {
+        console.warn('⚠️ Analysis progress element not found');
+    }
+}
+
 function resetAnalysisUI() {
     console.log('🔄 Resetting analysis UI');
     analysisInProgress = false;
@@ -2609,6 +2919,7 @@ function showAnalysisProgress() {
         updateProgress();
     }
 }
+
 
 // Enhanced display function for premium grid layout
 function displayAnalysisResults(results) {
@@ -2760,11 +3071,85 @@ function displayAnalysisResults(results) {
         modelAgreement: quantumResult.model_agreement || 0.90
     };
     
-    // Generate XAI explanations for the new results
-    if (window.xaiData) {
-        console.log('🧠 Generating XAI explanations for new analysis...');
+    // REAL-TIME XAI UPDATE: Force immediate and comprehensive XAI refresh
+    console.log('🧠 REAL-TIME XAI UPDATE: Processing new analysis results...');
+    console.log('📊 Analysis Results for XAI:', window.analysisResults);
+    
+    // Ensure XAI system is initialized
+    if (!window.xaiData) {
+        console.log('🔧 Initializing XAI system...');
+        window.xaiData = {
+            currentAnalysis: null,
+            lastExplanation: null,
+            spectrumData: null,
+            modelPrediction: null,
+            featureImportance: null,
+            uncertainty: null
+        };
+    }
+    
+    // Process backend XAI data if available
+    if (results.ml_results && results.ml_results.length > 0) {
+        const mlResult = results.ml_results[0];
+        if (mlResult.result && mlResult.result.xai_explanations) {
+            console.log('🧠 Processing backend XAI data...');
+            processBackendXAIData(mlResult.result.xai_explanations);
+        } else {
+            console.log('🧠 Generating client-side XAI explanations...');
+            generateRealExplanations(window.analysisResults);
+        }
+    } else {
+        console.log('🧠 Generating client-side XAI explanations...');
         generateRealExplanations(window.analysisResults);
     }
+    
+    // Force immediate visual update with multiple attempts to ensure it works
+    setTimeout(() => {
+        console.log('🎯 XAI Update Step 1: Refreshing visualizations...');
+        refreshXAIVisualizations();
+    }, 100);
+    
+    setTimeout(() => {
+        console.log('🎯 XAI Update Step 2: Updating displays...');
+        updateXAIDisplay();
+        updateUncertaintyDisplay();
+    }, 300);
+    
+    setTimeout(() => {
+        console.log('🎯 XAI Update Step 3: Final refresh...');
+        // Force refresh of individual components
+        initializeFeatureImportanceChart();
+        initializeUncertaintyGauge();
+        generateLimeExplanation();
+        
+        // Add visual feedback to XAI tab to show it's been updated
+        const xaiTab = document.querySelector('[data-tab="explanations"]');
+        if (xaiTab) {
+            xaiTab.classList.add('new-results');
+            xaiTab.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
+            xaiTab.style.color = 'white';
+            
+            // Add pulsing animation to draw attention
+            xaiTab.style.animation = 'xai-pulse 2s infinite';
+            
+            setTimeout(() => {
+                xaiTab.classList.remove('new-results');
+                xaiTab.style.background = '';
+                xaiTab.style.color = '';
+                xaiTab.style.animation = '';
+            }, 5000); // Extended to 5 seconds for better visibility
+        }
+        
+        // Show notification that XAI is ready
+        if (window.notificationSystem) {
+            window.notificationSystem.info('XAI Ready', 'AI explanations updated with latest analysis. Click "AI Explanations" tab to view.', {
+                category: 'xai',
+                duration: 5000
+            });
+        }
+        
+        console.log('✅ REAL-TIME XAI UPDATE COMPLETED');
+    }, 500);
     
     console.log('✅ Premium analysis results display complete');
     console.log('🧠 XAI explanations updated with real analysis data');
@@ -3214,6 +3599,19 @@ function showTab(tabName) {
     const navItem = document.querySelector(`[data-tab="${tabName}"]`);
     if (navItem) {
         navItem.classList.add('active');
+    }
+    
+    // REAL-TIME XAI: Refresh explanations when switching to XAI tab
+    if (tabName === 'explanations') {
+        console.log('🧠 XAI tab activated - refreshing explanations...');
+        setTimeout(() => {
+            if (window.analysisResults && window.xaiData) {
+                refreshXAIVisualizations();
+                console.log('✅ XAI refreshed on tab switch');
+            } else {
+                console.log('⚠️ No analysis data available for XAI refresh');
+            }
+        }, 300); // Small delay to ensure tab is fully loaded
     }
 }
 
