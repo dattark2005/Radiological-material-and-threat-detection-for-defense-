@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XAI Real-Time Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #5a6fd8;
+        }
+        .test-result {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
+        }
+        .console-log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧠 XAI Real-Time System Test</h1>
+        
+        <div class="test-result">
+            <h3>📋 Test Instructions:</h3>
+            <ol>
+                <li>Open the main application in another tab</li>
+                <li>Upload a spectrum file and run analysis</li>
+                <li>Switch to the "AI Explanations" tab</li>
+                <li>Watch for real-time updates and animations</li>
+                <li>Use the buttons below to test manual triggers</li>
+            </ol>
+        </div>
+
+        <div>
+            <button class="test-button" onclick="testAnalysisComplete()">🔬 Simulate Analysis Complete</button>
+            <button class="test-button" onclick="testTabSwitch()">📑 Simulate Tab Switch</button>
+            <button class="test-button" onclick="testManualRefresh()">🔄 Test Manual Refresh</button>
+            <button class="test-button" onclick="clearConsole()">🧹 Clear Console</button>
+        </div>
+
+        <div class="test-result">
+            <h3>📊 Expected Real-Time Behaviors:</h3>
+            <ul>
+                <li>✅ <strong>Analysis Complete:</strong> XAI updates automatically with new data</li>
+                <li>✅ <strong>Tab Switch:</strong> XAI refreshes when explanations tab is activated</li>
+                <li>✅ <strong>Visual Feedback:</strong> Numbers animate and glow during updates</li>
+                <li>✅ <strong>Auto-Refresh:</strong> Updates every 10 seconds when XAI tab is active</li>
+                <li>✅ <strong>Real Calculations:</strong> Values change based on actual spectrum data</li>
+            </ul>
+        </div>
+
+        <h3>🖥️ Console Output:</h3>
+        <div id="consoleOutput" class="console-log">
+            Console output will appear here...
+        </div>
+    </div>
+
+    <script>
+        // Capture console logs
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('consoleOutput');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            if (message.includes('XAI') || message.includes('🧠') || message.includes('🔄')) {
+                consoleOutput.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            }
+        };
+
+        function testAnalysisComplete() {
+            console.log('🧠 TEST: Simulating analysis completion...');
+            
+            // Create mock analysis results
+            const mockResults = {
+                threatLevel: 'HIGH',
+                confidence: 92.5,
+                isotope: 'Cs-137',
+                materialType: 'Cesium',
+                spectrumData: generateMockSpectrum(),
+                vqcConfidence: 0.89,
+                qsvcConfidence: 0.91,
+                processingTime: 2.8,
+                modelAgreement: 0.94
+            };
+            
+            // Trigger XAI update (if main app is loaded)
+            if (window.parent && window.parent.generateRealExplanations) {
+                window.parent.window.analysisResults = mockResults;
+                window.parent.generateRealExplanations(mockResults);
+                console.log('✅ TEST: XAI update triggered with mock data');
+            } else {
+                console.log('⚠️ TEST: Main application not found - open main app first');
+            }
+        }
+
+        function testTabSwitch() {
+            console.log('🧠 TEST: Simulating tab switch to explanations...');
+            
+            if (window.parent && window.parent.showTab) {
+                window.parent.showTab('explanations');
+                console.log('✅ TEST: Tab switch triggered');
+            } else {
+                console.log('⚠️ TEST: Main application not found - open main app first');
+            }
+        }
+
+        function testManualRefresh() {
+            console.log('🧠 TEST: Simulating manual XAI refresh...');
+            
+            if (window.parent && window.parent.refreshXAIVisualizations) {
+                window.parent.refreshXAIVisualizations();
+                console.log('✅ TEST: Manual refresh triggered');
+            } else {
+                console.log('⚠️ TEST: Main application not found - open main app first');
+            }
+        }
+
+        function generateMockSpectrum() {
+            const spectrum = new Array(1024).fill(0);
+            
+            // Add background noise
+            for (let i = 0; i < spectrum.length; i++) {
+                spectrum[i] = Math.random() * 0.1 + 0.05;
+            }
+            
+            // Add Cs-137 peak at 662 keV
+            const cs137Channel = Math.round(662 / 3);
+            for (let i = cs137Channel - 5; i <= cs137Channel + 5; i++) {
+                if (i >= 0 && i < spectrum.length) {
+                    const distance = Math.abs(i - cs137Channel);
+                    spectrum[i] += Math.exp(-distance * distance / 8) * (0.8 + Math.random() * 0.2);
+                }
+            }
+            
+            return spectrum;
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = 'Console cleared...<br>';
+        }
+
+        // Initial message
+        console.log('🧠 XAI Real-Time Test System Ready');
+        console.log('📋 Open main application and run tests');
+    </script>
+</body>
+</html>

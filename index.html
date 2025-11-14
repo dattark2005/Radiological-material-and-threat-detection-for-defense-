@@ -987,10 +987,9 @@
                             <!-- Feature Importance Visualization -->
                             <div class="xai-card feature-importance-card">
                                 <div class="card-header">
-                                    <h3><i class="fas fa-chart-bar"></i> Feature Importance (SHAP)</h3>
-                                    <div class="viz-controls">
-                                        <button class="viz-btn active" data-type="bar">Bar Chart</button>
-                                        <button class="viz-btn" data-type="waterfall">Waterfall</button>
+                                    <h3><i class="fas fa-chart-bar"></i> Feature Importance</h3>
+                                    <div class="refresh-btn" onclick="refreshModelExplanation()">
+                                        <i class="fas fa-sync-alt"></i> Refresh
                                     </div>
                                 </div>
                                 <div class="feature-viz-container">
@@ -1008,28 +1007,6 @@
                                 </div>
                             </div>
 
-                            <!-- Spectrum Heatmap Explanation -->
-                            <div class="xai-card spectrum-heatmap-card">
-                                <div class="card-header">
-                                    <h3><i class="fas fa-fire"></i> Spectrum Attention Map</h3>
-                                    <div class="heatmap-controls">
-                                        <label>Sensitivity: <input type="range" id="heatmapSensitivity" min="0.1" max="1" step="0.1" value="0.5"></label>
-                                    </div>
-                                </div>
-                                <div class="heatmap-container">
-                                    <canvas id="spectrumHeatmap" width="500" height="200"></canvas>
-                                    <div class="heatmap-info">
-                                        <div class="info-item">
-                                            <span class="info-label">Most Important Region:</span>
-                                            <span class="info-value" id="importantRegion">600-700 keV</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">Attention Score:</span>
-                                            <span class="info-value" id="attentionScore">0.82</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
                             <!-- LIME Local Explanation -->
                             <div class="xai-card lime-explanation-card">
@@ -1063,57 +1040,18 @@
                                 </div>
                             </div>
 
-                            <!-- Counterfactual Analysis -->
-                            <div class="xai-card counterfactual-card">
-                                <div class="card-header">
-                                    <h3><i class="fas fa-exchange-alt"></i> What-If Analysis</h3>
-                                    <div class="scenario-selector">
-                                        <select id="scenarioSelect">
-                                            <option value="remove_peak">Remove Main Peak</option>
-                                            <option value="increase_noise">Increase Noise</option>
-                                            <option value="change_exposure">Change Exposure Time</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="counterfactual-content">
-                                    <div class="scenario-comparison">
-                                        <div class="scenario-item current">
-                                            <h4>Current Scenario</h4>
-                                            <div class="scenario-result">Low Risk (87.3%)</div>
-                                            <div class="scenario-factors">
-                                                <div class="factor">Cs-137 Peak: Present</div>
-                                                <div class="factor">Noise Level: 2.1%</div>
-                                                <div class="factor">Exposure: 300s</div>
-                                            </div>
-                                        </div>
-                                        <div class="scenario-item alternative">
-                                            <h4>Alternative Scenario</h4>
-                                            <div class="scenario-result" id="alternativeResult">High Risk (92.1%)</div>
-                                            <div class="scenario-factors" id="alternativeFactors">
-                                                <div class="factor">Cs-137 Peak: Enhanced</div>
-                                                <div class="factor">Noise Level: 2.1%</div>
-                                                <div class="factor">Exposure: 300s</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
                             <!-- Model Confidence & Uncertainty -->
                             <div class="xai-card uncertainty-card">
                                 <div class="card-header">
                                     <h3><i class="fas fa-question-circle"></i> Model Uncertainty</h3>
-                                    <div class="uncertainty-type">
-                                        <button class="uncertainty-btn active" data-type="epistemic">Epistemic</button>
-                                        <button class="uncertainty-btn" data-type="aleatoric">Aleatoric</button>
-                                    </div>
                                 </div>
                                 <div class="uncertainty-content">
                                     <div class="uncertainty-gauge">
                                         <canvas id="uncertaintyGauge" width="200" height="200"></canvas>
                                         <div class="gauge-info">
                                             <div class="gauge-value" id="uncertaintyValue">12.7%</div>
-                                            <div class="gauge-label">Uncertainty</div>
+                                            <div class="gauge-label">Total Uncertainty</div>
                                         </div>
                                     </div>
                                     <div class="uncertainty-breakdown">
